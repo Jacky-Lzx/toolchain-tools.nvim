@@ -8,6 +8,7 @@ local fields = {
   resolve = true,
   post_install = true,
   post_install_async = true,
+  optional = true,
 }
 
 function M.normalize(requirements)
@@ -19,6 +20,8 @@ function M.normalize(requirements)
       assert(fields[key], "unknown requirement field: " .. tostring(key))
     end
     assert(providers[entry.provider], "unknown provider: " .. tostring(entry.provider))
+    assert(entry.optional == nil or type(entry.optional) == "boolean", "optional must be a boolean")
+    assert(entry.optional == nil or entry.provider == "system", "optional is only supported for system requirements")
     assert(type(entry.name) == "string" and entry.name:match("^[%w_][%w_.+-]*$"), "invalid requirement name")
     assert(
       entry.executable == nil or (type(entry.executable) == "string" and entry.executable ~= ""),

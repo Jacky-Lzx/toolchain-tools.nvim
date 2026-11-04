@@ -1,7 +1,7 @@
 vim.opt.rtp:prepend(vim.fn.getcwd())
 local root = assert(vim.env.TOOLCHAIN_TUI_DIR)
 local toolchain = require("toolchain")
-local ready, stage = false, "initial"
+local ready, optional_ready, stage = false, false, "initial"
 local source_win, source_buf = vim.api.nvim_get_current_win(), vim.api.nvim_get_current_buf()
 vim.api.nvim_buf_set_lines(source_buf, 0, -1, false, { "unsaved source", "keep this text" })
 local errors = {}
@@ -26,6 +26,14 @@ toolchain.setup({
         return ready and vim.fn.exepath("sh") or nil
       end,
     },
+    {
+      provider = "system",
+      name = "toolchain-optional-fixture-123",
+      optional = true,
+      resolve = function()
+        return optional_ready and vim.fn.exepath("sh") or nil
+      end,
+    },
   },
 })
 vim.cmd("ToolchainPlan")
@@ -35,9 +43,9 @@ next_stage("plan")
 local timer = vim.uv.new_timer()
 local function tick()
   local tasks = toolchain.status()
-  if stage == "plan" and #tasks == 2 and tasks[2].state == "failed" then
+  if stage == "plan" and #tasks == 3 and tasks[2].state == "failed" and tasks[3].state == "unavailable" then
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    if not lines[5]:find("failed", 1, true) then
+    if not lines[5]:find("failed", 1, true) or not lines[6]:find("unavailable", 1, true) then
       return
     end
     assert(tasks[1].state == "skipped")
@@ -53,7 +61,18 @@ local function tick()
     if lines[4] == "system:fixture  [skipped]" then
       next_stage("retried")
     end
-  elseif stage == "retried" and vim.o.columns == 40 then
+  elseif stage == "retried" then
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    if lines[4] == "system:toolchain-optional-fixture-123  [unavailable]" then
+      optional_ready = true
+      next_stage("optional_detail")
+    end
+  elseif stage == "optional_detail" and tasks[3].attempt == 2 and tasks[3].state == "skipped" then
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    if lines[4] == "system:toolchain-optional-fixture-123  [skipped]" then
+      next_stage("optional_retried")
+    end
+  elseif stage == "optional_retried" and vim.o.columns == 40 then
     assert(vim.api.nvim_win_get_config(0).width == 36)
     next_stage("narrow")
   elseif stage == "narrow" and vim.api.nvim_get_current_win() == source_win then
@@ -71,10 +90,9 @@ local function tick()
     assert(#errors == 0, table.concat(errors, "\n"))
     timer:stop()
     timer:close()
-    vim.fn.writefile(
-      { "PASS plan, install, details, retry, resize, close/reopen, logs, unsaved source preserved" },
-      root .. "/result"
-    )
+    vim.fn.writefile({
+      "PASS plan, install, details, retry, optional availability/retry, resize, close/reopen, logs, unsaved source preserved",
+    }, root .. "/result")
     vim.cmd("qa!")
   end
 end

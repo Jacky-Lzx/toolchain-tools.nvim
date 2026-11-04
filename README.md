@@ -34,6 +34,7 @@ For a local checkout with lazy.nvim:
       { provider = "mason", name = "lua-language-server", executable = "lua-language-server" },
       { provider = "mason", name = "stylua", executable = "stylua" },
       { provider = "system", name = "git" },
+      { provider = "system", name = "html_beautify", optional = true },
     },
   },
 }
@@ -56,7 +57,7 @@ them. `:Toolchain` opens the live task window.
 | `:Toolchain` | Show tasks from this Neovim session |
 | `:ToolchainPlan` | Show configured requirements and local executable availability |
 | `:ToolchainInstall [provider:name ...]` | Install all configured requirements or selected IDs |
-| `:ToolchainRetry [provider:name ...]` | Retry failed/cancelled tasks, using their original declaration |
+| `:ToolchainRetry [provider:name ...]` | Retry failed, unavailable, or cancelled tasks using their original declaration |
 | `:ToolchainCancel provider:name` | Cancel a task that is still queued |
 | `:ToolchainLog` | Open a read-only snapshot of the persistent JSON-lines log |
 | `:checkhealth toolchain` | Check declarations and backend availability without installing |
@@ -65,9 +66,11 @@ In the window: `i` installs all configured requirements, `r` retries the selecte
 task, `c` cancels it if queued, `Enter` toggles details, and `q`/`Esc` closes the
 window. Closing the window does not stop installation.
 
-Task states are `queued`, `running`, `installed`, `skipped`, `failed`, and
-`cancelled`. Repeated submissions of an identical active requirement share its
-task. Submitting it again after completion rechecks availability. Conflicting
+Task states are `queued`, `running`, `installed`, `skipped`, `unavailable`,
+`failed`, and `cancelled`. `unavailable` means an optional system executable is
+absent, and does not trigger a failure notification. Repeated submissions of an
+identical active requirement share its task. Submitting it again after completion
+rechecks availability. Conflicting
 declarations for the same ID are rejected before anything is queued.
 
 The plan deliberately reports backend-managed requirements as `check`, not
@@ -84,11 +87,17 @@ A requirement has `provider` and `name`, with optional fields:
 | `resolve` | Function returning an existing executable path, or `nil`/`false`; falls back to `executable` |
 | `post_install` | Synchronous Mason-only hook receiving the package object |
 | `post_install_async` | Mason-only hook receiving `(package, done, log)`; calls `done()` on success or `done(error)` on failure |
+| `optional` | System-only boolean, default `false`; missing optional executables finish as `unavailable` |
 
 System requirements default their executable to `name`; Mason requirements do
 not, since registry package names and executable names can differ. Resolver
 errors fail the individual task. Keep resolvers read-only: planning and health
-checks also call them.
+checks also call them. Optional declarations change only how an absent system
+tool is reported: resolver errors and malformed declarations still fail. Plans
+show `unavailable` and health reports it as information. Explicit retries recheck
+these tools, so they can become `skipped` after you install them externally.
+System requirements never install packages themselves. This option does not
+suppress Mason/parser download, compilation, or post-install failures.
 
 Mason binaries already on PATH are recognized as Mason-managed, including
 symlinks under its configured install root. Their package checks and hooks still
@@ -154,6 +163,7 @@ require("toolchain").setup({
         resolve = tool.resolve,
         post_install = tool.post_install,
         post_install_async = tool.post_install_async,
+        optional = tool.optional,
       }
     end
     return requirements
@@ -166,6 +176,10 @@ Any extra parsers previously added outside the language records, such as `regex`
 should be added to this returned list too. Once you adopt this integration, a
 configuration command such as `ConfigToolsInstall` can call
 `require("toolchain").install()` instead of invoking separate installers.
+During adaptation, mark optional system dependencies explicitly, for example
+`html_beautify`; language/profile selection and optional-feature policy remain
+in your configuration. The existing language schema/helper functions must also
+be adapted before storing async hooks or optional flags in those declarations.
 
 ## Lua API and configuration
 
@@ -184,13 +198,13 @@ local ids = tc.install() -- or tc.install(requirements)
 tc.install_ids({ "mason:stylua" })
 local tasks = tc.status() -- independent snapshots, including logs and attempt numbers
 local finished, final_tasks = tc.wait(300000)
-tc.retry() -- or tc.retry({ "mason:stylua" })
+tc.retry() -- failed, unavailable, cancelled; or tc.retry({ "mason:stylua" })
 local cancelled, reason = tc.cancel("mason:stylua")
 tc.open()
 ```
 
 `install()` is asynchronous. `wait(timeout_ms)` reports whether the queue has
-finished, including failed/cancelled tasks; it does not imply success. A timeout
+finished, including failed/cancelled/unavailable tasks; it does not imply success. A timeout
 does not stop installers. To bootstrap in a script, inspect the final states:
 
 ```lua
@@ -198,7 +212,8 @@ tc.install()
 local finished, tasks = tc.wait(300000)
 assert(finished, "Installation timed out")
 for _, task in ipairs(tasks) do
-  assert(task.state == "installed" or task.state == "skipped", task.id .. ": " .. task.message)
+  assert(task.state == "installed" or task.state == "skipped"
+    or task.state == "unavailable", task.id .. ": " .. task.message)
 end
 ```
 
@@ -207,7 +222,7 @@ is queued/running. Requiring the module alone registers nothing. Setup registers
 commands, but does not start installers or register buffer highlighting hooks.
 
 Each task transition/output chunk emits `User ToolchainUpdated` with
-`event.data = { id, state, attempt, message }`. UI integrations can read
+`event.data = { id, state, attempt, optional, message }`. UI integrations can read
 `tc.status()`; consuming the event does not require the built-in window.
 
 ## Installation boundaries

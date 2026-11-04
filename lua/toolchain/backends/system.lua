@@ -16,6 +16,8 @@ function M.install(spec, ctx)
   local path = M.find(spec)
   if path then
     ctx.done("skipped", "Using " .. path)
+  elseif spec.optional then
+    ctx.done("unavailable", "Optional system executable is unavailable: " .. (spec.executable or spec.name))
   else
     ctx.done("failed", "Required system executable is unavailable: " .. (spec.executable or spec.name))
   end

@@ -12,7 +12,7 @@ COMMANDS                                                   *toolchain-commands*
 :ToolchainInstall [provider:name ...]                          *:ToolchainInstall*
     Queue all configured requirements or selected IDs asynchronously.
 :ToolchainRetry [provider:name ...]                            *:ToolchainRetry*
-    Retry failed/cancelled tasks with their original declarations.
+    Retry failed, unavailable, or cancelled tasks with their original declarations.
 :ToolchainCancel provider:name                                *:ToolchainCancel*
     Cancel a queued task. Running tasks cannot be cancelled.
 :ToolchainLog                                                 *:ToolchainLog*
@@ -31,6 +31,7 @@ SETUP                                                        *toolchain-setup*
         { provider = 'treesitter', name = 'lua' },
         { provider = 'mason', name = 'stylua', executable = 'stylua' },
         { provider = 'system', name = 'git' },
+        { provider = 'system', name = 'html_beautify', optional = true },
       },
     })
 <
@@ -52,6 +53,11 @@ Other options: max_log_lines = 200 (bounded output chunks per task), notify = tr
 (failure notifications), log_file = stdpath('state') .. '/toolchain-tools.log'
 (false disables persistence). Setup and require never start installations.
 
+System requirements accept optional = true (default false). An absent optional
+executable is unavailable, not failed; health reports it as information. Resolver
+errors still fail. Retry rechecks unavailable tools after external installation.
+Optional flags do not suppress Mason/parser installation or hook failures.
+
 API                                                          *toolchain-api*
 >lua
     local tc = require('toolchain')
@@ -59,21 +65,23 @@ API                                                          *toolchain-api*
     tc.install()                 -- queue requirements; returns task IDs
     tc.install_ids({'mason:stylua'})
     tc.status()                  -- copied task states, messages, attempts, logs
-    tc.retry()                   -- optional list of failed/cancelled task IDs
+    tc.retry()                   -- failed/unavailable/cancelled; optional ID list
     tc.cancel('mason:stylua')     -- returns success, reason
     local finished, tasks = tc.wait(300000)
     tc.open()
     tc.log_file()
 <
 wait() needs a finite timeout in milliseconds. Completion includes failed and
-cancelled tasks: check states for installed/skipped to determine success.
+cancelled tasks: check for installed/skipped/unavailable to accept completion
+without required dependency failures.
 
 Task IDs are provider:name. Active identical declarations share one task.
-Plan states: available, check (deferred backend check), missing (system), failed.
-Task states: queued, running, installed, skipped, failed, cancelled.
+Plan states: available, check (deferred backend check), missing (system),
+unavailable (optional system), failed.
+Task states: queued, running, installed, skipped, unavailable, failed, cancelled.
 
 User ToolchainUpdated fires for transitions/output; event.data contains id,
-state, attempt, message. Call status() to refresh custom UI integrations.
+state, attempt, optional, message. Call status() to refresh custom UI integrations.
 
 BOUNDARIES                                                   *toolchain-boundaries*
 

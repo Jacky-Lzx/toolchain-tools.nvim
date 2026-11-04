@@ -39,7 +39,7 @@ local function render(entries)
   else
     for _, entry in ipairs(entries) do
       lines[#lines + 1] =
-        string.format("%-10s %s%s", entry.state, entry.id, entry.attempt and "  #" .. entry.attempt or "")
+        string.format("%-11s %s%s", entry.state, entry.id, entry.attempt and "  #" .. entry.attempt or "")
       view.rows[#lines] = entry.id
     end
   end

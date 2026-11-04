@@ -12,6 +12,8 @@ function M.check()
   for _, entry in ipairs(plan) do
     if entry.state == "failed" or entry.state == "missing" then
       vim.health.warn(entry.id .. ": " .. entry.message)
+    elseif entry.state == "unavailable" then
+      vim.health.info(entry.id .. ": " .. entry.message)
     elseif entry.state == "check" then
       needed[entry.provider] = true
     end

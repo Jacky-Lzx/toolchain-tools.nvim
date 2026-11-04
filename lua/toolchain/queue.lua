@@ -1,7 +1,8 @@
 local Queue = {}
 Queue.__index = Queue
 
-local terminal = { installed = true, skipped = true, failed = true, cancelled = true }
+local terminal = { installed = true, skipped = true, unavailable = true, failed = true, cancelled = true }
+local retryable = { unavailable = true, failed = true, cancelled = true }
 
 function Queue.new(opts)
   return setmetatable({
@@ -24,6 +25,7 @@ function Queue:snapshot()
       id = id,
       provider = task.spec.provider,
       name = task.spec.name,
+      optional = task.spec.optional == true,
       state = task.state,
       attempt = task.attempt,
       message = task.message,
@@ -38,6 +40,7 @@ function Queue:changed(task, message)
     id = task.id,
     state = task.state,
     attempt = task.attempt,
+    optional = task.spec.optional == true,
     message = tostring(message or task.message or ""),
   })
   if not ok then
@@ -121,7 +124,12 @@ function Queue:pump()
         end
         finished = true
         vim.schedule(function()
-          if state ~= "installed" and state ~= "skipped" and state ~= "failed" then
+          if
+            state ~= "installed"
+            and state ~= "skipped"
+            and state ~= "failed"
+            and not (state == "unavailable" and task.spec.optional)
+          then
             state, message = "failed", "Backend returned an invalid result"
           end
           task.state, task.message = state, tostring(message or state)
@@ -174,13 +182,13 @@ function Queue:retry(ids)
   if ids then
     for _, id in ipairs(ids) do
       local task = self.tasks[id]
-      assert(task and (task.state == "failed" or task.state == "cancelled"), "task is not retryable: " .. id)
+      assert(task and retryable[task.state], "task is not retryable: " .. id)
       specs[#specs + 1] = task.spec
     end
   else
     for _, id in ipairs(self.order) do
       local task = self.tasks[id]
-      if task.state == "failed" or task.state == "cancelled" then
+      if retryable[task.state] then
         specs[#specs + 1] = task.spec
       end
     end

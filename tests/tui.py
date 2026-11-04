@@ -19,6 +19,8 @@ actions = {
     "plan": b"i",
     "installed": b"j\r",
     "detail": b"r",
+    "retried": b"\rj\r",
+    "optional_detail": b"r",
     "narrow": b"q",
     "reopened": b"q",
 }
@@ -47,7 +49,7 @@ with tempfile.TemporaryDirectory(prefix="toolchain-tui-") as directory:
             stage = stage_file.read_text().strip() if stage_file.exists() else ""
             if stage in handled:
                 continue
-            if stage == "retried":
+            if stage == "optional_retried":
                 os.write(master, b"\r")
                 fcntl.ioctl(master, termios.TIOCSWINSZ, struct.pack("HHHH", 20, 40, 0, 0))
                 os.kill(process.pid, signal.SIGWINCH)

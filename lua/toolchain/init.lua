@@ -75,13 +75,16 @@ function M.plan(input)
       elseif path then
         state, message = "available", "Using " .. path
       elseif spec.provider == "system" then
-        state, message = "missing", "Install this executable with your system package manager"
+        state = spec.optional and "unavailable" or "missing"
+        message = spec.optional and "Optional executable is unavailable; install it if needed"
+          or "Install this executable with your system package manager"
       end
     end
     result[#result + 1] = {
       id = spec.provider .. ":" .. spec.name,
       provider = spec.provider,
       name = spec.name,
+      optional = spec.optional == true,
       state = state,
       message = message,
     }

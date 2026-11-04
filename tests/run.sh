@@ -9,6 +9,7 @@ export NVIM_LOG_FILE="$test_root/nvim.log" PYTHONDONTWRITEBYTECODE=1
 "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/api.lua
 "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/backends.lua
 "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/hooks.lua
+"${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/optional.lua
 "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/health.lua
 python3 tests/tui.py
 if [ "${1:-}" = "--integration" ]; then
