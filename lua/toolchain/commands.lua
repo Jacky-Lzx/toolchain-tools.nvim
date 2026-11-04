@@ -53,6 +53,68 @@ function M.setup()
     complete = "file",
     desc = "Export a portable tool lock; ! resolves configured recipes explicitly",
   })
+  local function tool_name(value)
+    if not value or value == "" then
+      return
+    end
+    return assert(value:match("^tool:([%w_][%w_.+-]*)$"), "Expected tool:<package>")
+  end
+  local function version_completion(prefix, line)
+    local selected = line:match("ToolchainRollback%s+tool:([%w_][%w_.+-]*)%s+")
+    local items = {}
+    local tools = require("toolchain.tools")
+    if selected then
+      for _, entry in ipairs(tools.versions(selected)) do
+        if entry.recorded and entry.compatible and vim.startswith(entry.id, prefix) then
+          items[#items + 1] = entry.id
+        end
+      end
+    else
+      for _, name in ipairs(tools.packages()) do
+        if vim.startswith("tool:" .. name, prefix) then
+          items[#items + 1] = "tool:" .. name
+        end
+      end
+    end
+    return items
+  end
+  local function versions(args, prune)
+    local tools = require("toolchain.tools")
+    local entries = (prune and tools.prune_plan or tools.versions)(tool_name(args.fargs[1]))
+    local lines = { prune and "Toolchain prune preview (read-only)" or "Installed tool versions", "" }
+    for _, entry in ipairs(entries) do
+      lines[#lines + 1] = string.format(
+        "%s  %s  %s  [%s]%s",
+        entry.name,
+        entry.version,
+        entry.id,
+        prune and (entry.candidate and "candidate" or "keep") or entry.state,
+        #entry.reasons > 0 and "  " .. table.concat(entry.reasons, ", ") or ""
+      )
+    end
+    if #entries == 0 then
+      lines[#lines + 1] = "No managed versions"
+    end
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = prune
+        and "No files deleted. Current versions, recorded live sessions and active writers are protected."
+      or "Rollback selects an existing verified version; existing processes keep their files."
+    vim.cmd("botright new")
+    vim.bo.buftype, vim.bo.bufhidden, vim.bo.swapfile, vim.bo.filetype = "nofile", "wipe", false, "toolchain-versions"
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
+    vim.bo.modifiable = false
+    vim.keymap.set("n", "q", "<Cmd>close<CR>", { buffer = true, silent = true })
+  end
+  command("ToolchainVersions", function(args)
+    versions(args, false)
+  end, { nargs = "?", complete = version_completion, desc = "List installed independent tool versions" })
+  command("ToolchainPrune", function(args)
+    versions(args, true)
+  end, { nargs = "?", complete = version_completion, desc = "Preview retired versions without deleting files" })
+  command("ToolchainRollback", function(args)
+    assert(#args.fargs == 2, "Expected tool:<package> <version-id>")
+    require("toolchain.tools").rollback(tool_name(args.fargs[1]), args.fargs[2])
+  end, { nargs = "+", complete = version_completion, desc = "Activate a verified previous tool version" })
   command("ToolchainRetry", function(args)
     require("toolchain").retry(#args.fargs > 0 and args.fargs or nil)
   end, { nargs = "*", complete = completion, desc = "Retry failed, unavailable or cancelled tasks" })

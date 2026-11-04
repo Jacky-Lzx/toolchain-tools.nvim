@@ -91,12 +91,31 @@ local function active(package_name)
   name(package_name)
   local pointer = util.json(settings().install_dir .. "/current/" .. package_name .. ".json")
   if pointer and type(pointer.version) == "string" and pointer.version:match("^[a-f0-9]+%-%d+%-%d+$") then
-    return settings().install_dir .. "/versions/" .. package_name .. "/" .. pointer.version
+    return settings().install_dir .. "/versions/" .. package_name .. "/" .. pointer.version, pointer
   end
 end
 
-local function receipt(package_name)
-  local root = active(package_name)
+local function receipt(package_name, full)
+  local root, pointer = active(package_name)
+  if
+    not full
+    and pointer
+    and pointer.schema == 1
+    and pointer.name == package_name
+    and type(pointer.bin) == "table"
+    and type(pointer.resources) == "table"
+    and vim.fn.isdirectory(root) == 1
+    and vim.fn.filereadable(root .. "/receipt.json") == 1
+  then
+    return root,
+      {
+        schema = 1,
+        name = package_name,
+        version = pointer.package_version,
+        bin = pointer.bin,
+        resources = pointer.resources,
+      }
+  end
   local value = root and util.json(root .. "/receipt.json")
   if value and value.schema == 1 and value.name == package_name and type(value.bin) == "table" then
     return root, value
@@ -137,7 +156,7 @@ end
 
 -- Activate only installed directories. Setup and resolution never create files.
 function M.activate()
-  local paths, remove = {}, {}
+  local paths, remove, roots = {}, {}, {}
   for _, path in ipairs(activated_paths) do
     remove[path] = true
   end
@@ -148,7 +167,7 @@ function M.activate()
   end
   activated_paths = {}
   local current = settings().install_dir .. "/current"
-  if settings().path == "append" and vim.fn.isdirectory(current) == 1 then
+  if vim.fn.isdirectory(current) == 1 then
     local packages = {}
     for file, kind in vim.fs.dir(current) do
       if kind == "file" and file:match("%.json$") then
@@ -158,18 +177,37 @@ function M.activate()
     table.sort(packages)
     for _, package_name in ipairs(packages) do
       local root = receipt(package_name)
-      if root and vim.fn.isdirectory(root .. "/bin") == 1 then
-        activated_paths[#activated_paths + 1] = root .. "/bin"
+      if root then
+        roots[#roots + 1] = root
+        if settings().path == "append" and vim.fn.isdirectory(root .. "/bin") == 1 then
+          activated_paths[#activated_paths + 1] = root .. "/bin"
+        end
       end
     end
   end
   vim.list_extend(paths, activated_paths)
   vim.env.PATH = table.concat(paths, ":")
+  local ok, err = require("toolchain.tool_sessions").record(settings().install_dir, roots)
+  if not ok and err then
+    vim.notify("Toolchain session could not be recorded: " .. tostring(err), vim.log.levels.WARN)
+  end
 end
 
 local function fingerprint(entry)
   local os = uv.os_uname()
   return util.hash("toolchain-tool-v1\n" .. os.sysname .. "\n" .. os.machine .. "\n" .. canonical(entry))
+end
+
+local function consistent(value, package_name)
+  return type(value) == "table"
+    and value.schema == 1
+    and value.name == package_name
+    and type(value.recipe) == "table"
+    and type(value.bin) == "table"
+    and next(value.bin) ~= nil
+    and value.version == value.recipe.version
+    and vim.deep_equal(value.bin, value.recipe.bin)
+    and vim.deep_equal(value.resources or {}, value.recipe.resources or {})
 end
 
 local function tracked(relative)
@@ -213,7 +251,7 @@ end
 
 local function intact(root, desired)
   local value = root and util.json(root .. "/receipt.json")
-  if not value or value.schema ~= 1 or value.fingerprint ~= desired then
+  if not value or value.schema ~= 1 or value.fingerprint ~= desired or type(value.artifacts) ~= "table" then
     return false
   end
   local ok, actual = pcall(artifacts, root)
@@ -226,13 +264,35 @@ local function intact(root, desired)
   return ok and vim.deep_equal(actual, expected)
 end
 
+local function publish(package_name, root, value)
+  local directory = settings().install_dir .. "/current"
+  vim.fn.mkdir(directory, "p")
+  local pointer = directory .. string.format("/.%s-%d-%.0f.json", package_name, uv.os_getpid(), uv.hrtime())
+  util.write_json(pointer, {
+    schema = 1,
+    name = package_name,
+    version = vim.fs.basename(root),
+    package_version = value.version,
+    bin = value.bin,
+    resources = value.resources or {},
+  })
+  local ok, err = uv.fs_rename(pointer, directory .. "/" .. package_name .. ".json")
+  if not ok then
+    uv.fs_unlink(pointer)
+  end
+  assert(ok, err)
+end
+
+local function same_location(a, b)
+  return (uv.fs_realpath(a) or vim.fs.normalize(a)) == (uv.fs_realpath(b) or vim.fs.normalize(b))
+end
+
 function M.installed(package_name)
-  local root, value = receipt(package_name)
-  return {
-    current = root,
-    receipt = value,
-    intact = value and type(value.recipe) == "table" and intact(root, fingerprint(value.recipe)) or false,
-  }
+  local root, value = receipt(package_name, true)
+  local valid = consistent(value, package_name)
+    and (not value.root or (type(value.root) == "string" and same_location(value.root, root)))
+    and intact(root, fingerprint(value.recipe))
+  return { current = root, receipt = value, intact = not not valid }
 end
 
 function M.info(package_name)
@@ -255,6 +315,13 @@ function M.export_lock(path, names)
       "Install/repair " .. package_name .. " independently first, or use :ToolchainLock!"
     )
     entries[package_name] = require("toolchain.tool_lock").capture(info.current, info.receipt)
+    local release = util.lock(settings().install_dir .. "/locks/" .. package_name .. ".lock")
+    local ok, err = pcall(function()
+      assert(active(package_name) == info.current, "Tool changed during lock export; retry")
+      publish(package_name, info.current, info.receipt)
+    end)
+    release()
+    assert(ok, err)
   end
   require("toolchain.tool_lock").write(path or M.lockfile(), entries)
   return path or M.lockfile()
@@ -343,7 +410,8 @@ local function hook(spec, root, entry, log)
   if not (spec.post_install or spec.post_install_async) then
     return
   end
-  local package_info = { name = spec.name, path = root, version = entry.version, resources = entry.resources or {} }
+  local package_info =
+    { name = spec.name, path = root, version = entry.version, resources = vim.deepcopy(entry.resources or {}) }
   if spec.post_install_async then
     local err = util.await(function(done)
       spec.post_install_async(package_info, done, log)
@@ -365,10 +433,15 @@ function M.install(spec, ctx)
     local desired, previous = fingerprint(entry), active(spec.name)
     local previous_receipt = previous and util.json(previous .. "/receipt.json")
     if
-      previous_receipt
+      consistent(previous_receipt, spec.name)
+      and (not previous_receipt.root or (type(previous_receipt.root) == "string" and same_location(
+        previous_receipt.root,
+        previous
+      )))
       and require("toolchain.tool_lock").matches(previous, previous_receipt, entry)
       and intact(previous, fingerprint(previous_receipt.recipe))
     then
+      publish(spec.name, previous, previous_receipt)
       M.activate()
       return "skipped"
     end
@@ -383,6 +456,7 @@ function M.install(spec, ctx)
     wrappers(root, entry)
     util.write_json(root .. "/receipt.json", {
       schema = 1,
+      root = root,
       name = spec.name,
       version = entry.version,
       recipe = entry,
@@ -392,11 +466,7 @@ function M.install(spec, ctx)
       metadata = metadata or {},
       artifacts = artifacts(root),
     })
-    local directory = settings().install_dir .. "/current"
-    vim.fn.mkdir(directory, "p")
-    local pointer = directory .. "/." .. spec.name .. "-" .. token .. ".json"
-    util.write_json(pointer, { version = token })
-    assert(uv.fs_rename(pointer, directory .. "/" .. spec.name .. ".json"))
+    publish(spec.name, root, assert(util.json(root .. "/receipt.json")))
     published = true
     M.activate()
     return "installed"
@@ -413,6 +483,57 @@ function M.install(spec, ctx)
       ok and (result == "installed" and "Installed independently" or "Managed artifacts are intact") or tostring(result)
     )
   end)
+end
+
+function M.packages()
+  return require("toolchain.tool_versions").names(settings().install_dir)
+end
+
+function M.versions(package_name)
+  if package_name then
+    name(package_name)
+  end
+  return require("toolchain.tool_versions").list(settings().install_dir, package_name, fingerprint, consistent)
+end
+
+function M.prune_plan(package_name)
+  return M.versions(package_name) -- Deliberately read-only; no version files are deleted.
+end
+
+function M.rollback(package_name, id)
+  name(package_name)
+  assert(type(id) == "string" and id:match("^[a-f0-9]+%-%d+%-%d+$"), "Invalid managed version ID")
+  assert(not inflight[package_name], "Tool is currently installing: " .. package_name)
+  local root = settings().install_dir .. "/versions/" .. package_name .. "/" .. id
+  local stat = uv.fs_lstat(root)
+  assert(stat and stat.type == "directory", "Managed version directory does not exist")
+  local release = util.lock(settings().install_dir .. "/locks/" .. package_name .. ".lock")
+  local ok, err = pcall(function()
+    local value = util.json(root .. "/receipt.json")
+    assert(consistent(value, package_name), "Invalid or inconsistent version receipt")
+    assert(
+      not value.root or (type(value.root) == "string" and same_location(value.root, root)),
+      "Tool versions cannot be relocated"
+    )
+    assert(intact(root, fingerprint(value.recipe)), "Version is damaged or incompatible with this platform")
+    for _, path in pairs(value.resources or {}) do
+      assert(uv.fs_stat(root .. "/" .. util.relative(path)), "Version resource is unavailable")
+    end
+    local prefix = quote((value.root or root) .. "/"):sub(1, -2)
+    for command, descriptor in pairs(value.bin) do
+      name(command)
+      assert(uv.fs_stat(root .. "/" .. util.relative(descriptor.path)), "Version entrypoint is unavailable")
+      assert(
+        util.read(root .. "/bin/" .. command):find(prefix, 1, true),
+        "Version wrapper refers to another installation"
+      )
+    end
+    publish(package_name, root, value)
+  end)
+  release()
+  assert(ok, err)
+  M.activate()
+  return root
 end
 
 return M

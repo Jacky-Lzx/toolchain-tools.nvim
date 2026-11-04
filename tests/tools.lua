@@ -24,7 +24,7 @@ local function run()
   return toolchain.status()[1]
 end
 
-t.test("setup and planning are offline, lazy and filesystem read-only", function()
+t.test("setup without installed tools is offline, lazy and filesystem read-only", function()
   setup()
   assert(vim.fn.isdirectory(install) == 0)
   t.eq(toolchain.plan()[1].state, "check")

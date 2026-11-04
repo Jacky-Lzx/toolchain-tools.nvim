@@ -64,9 +64,9 @@ project lock, initial resolutions can select new transitive versions. A project
 lock freezes the complete recipes, verified release digests, npm/Python dependency
 locks and resolved Cargo commit for each recorded platform. See below.
 
-Recipes can be supplied through `tools.sources`. Setup only appends existing
-managed binary directories to PATH (`tools.path = "skip"` disables this); it
-never downloads or creates directories. System/Nix executables retain priority.
+Recipes can be supplied through `tools.sources`. Setup appends existing managed binary directories to PATH (`tools.path = "skip"`
+disables this) and records their use in a session lease. It never downloads or
+creates an installation; existing stores may receive session metadata. System/Nix executables retain priority.
 
 `:ToolchainInstall` also updates an installation to the currently pinned recipe.
 To change versions, update the recipe first; it never silently selects latest.
@@ -129,6 +129,35 @@ queued resolution/export completion. `User ToolchainLockWritten` fires only afte
 an atomic write. `unlocked = true` is an explicit tool-only requirement override
 used by lock updates. A lock snapshot covers independent `tool` requirements;
 parser Git/query pins continue to come from the parser registry.
+
+## Tool versions and rollback
+
+- `:ToolchainVersions [tool:name]` lists immutable version IDs and current,
+  protected, retired or incomplete state.
+- `:ToolchainRollback tool:name <version-id>` verifies the receipt, platform,
+  artifact hashes and entrypoints before atomically selecting that version.
+  Use the immutable ID shown in the list. Failed validation retains the current
+  pointer. The project lock is unchanged; subsequent installation follows it.
+- `:ToolchainPrune [tool:name]` opens a **read-only preview**. It never deletes
+  version files. Current versions, recorded live editor sessions, active writers
+  and uncertain session records are excluded from cleanup candidates.
+
+Session records accumulate every version activated by the editor, so upgrades,
+rollback and uninstall cannot mark a version still used by that editor as a
+candidate. A normal exit releases its records; dead owners no longer protect
+retired versions. These records cover editor sessions using this implementation;
+external programs and older editor sessions are not tracked. Version files are
+always retained. Restart existing language/debug clients to use a newly selected
+version. Reports close with `q` and preserve the source buffer.
+
+`require("toolchain.tools").packages()` lists installed package names.
+`.versions(name)` and `.prune_plan(name)` return the
+same records (`id`, `version`, `current`, `recorded`, `compatible`, `protected`,
+`reasons`, `candidate`, `root`). `.rollback(name, id)` performs verified selection.
+Listing does not imply artifact integrity; rollback always validates the target.
+Version paths are permanent, including Python virtual environments. Current
+pointer descriptors keep startup/resource lookup independent of large manifests;
+legacy pointers are upgraded during explicit installation or lock export.
 
 ## Independent parser installation
 
@@ -214,6 +243,9 @@ The `treesitter` provider remains available as an explicit compatibility adapter
 | `:ToolchainPlan` | Show configured requirements and local executable availability |
 | `:ToolchainInstall [provider:name ...]` | Install all configured requirements or selected IDs |
 | `:ToolchainLock[!] [file]` | Export installed tools; `!` explicitly resolves managed recipes first |
+| `:ToolchainVersions [tool:name]` | List immutable tool versions and protection state |
+| `:ToolchainRollback tool:name version-id` | Verify and activate an existing tool version |
+| `:ToolchainPrune [tool:name]` | Preview cleanup candidates without deleting files |
 | `:ToolchainUninstall tool:name` | Deactivate an independent tool; retain its version files |
 | `:ToolchainRetry [provider:name ...]` | Retry failed, unavailable, or cancelled tasks using their original declaration |
 | `:ToolchainCancel provider:name` | Cancel a task that is still queued |
@@ -400,7 +432,8 @@ Each task transition/output chunk emits `User ToolchainUpdated` with
 - Memory logs are bounded per task. The persistent log is append-only; rotate or
   remove it yourself when needed. Session tasks are not resumed after a restart.
 - Managed parser updates follow explicit pinned-source changes and integrity checks.
-  General package updates, uninstallation and automatic version pruning are future work.
+  Package updates use explicit recipe/lock changes. Version cleanup remains a read-only
+  preview; automatic deletion is not implemented.
 
 ## Validation
 

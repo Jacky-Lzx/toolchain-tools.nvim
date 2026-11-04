@@ -22,6 +22,12 @@ COMMANDS                                                   *toolchain-commands*
     Export a portable tool lock. ! explicitly resolves configured managed tools
     first, including managed copies of system-provided tools. Ordinary installs
     use tools.lockfile without rewriting it; export failure retains the old file.
+:ToolchainVersions [tool:<package>]                       *:ToolchainVersions*
+    List immutable version IDs, current selection and protection reasons.
+:ToolchainRollback tool:<package> <version-id>             *:ToolchainRollback*
+    Validate an existing version and atomically select it without changing locks.
+:ToolchainPrune [tool:<package>]                             *:ToolchainPrune*
+    Preview cleanup candidates only. No version files are deleted.
 :ToolchainUninstall tool:<package>
     Remove an independent tool activation pointer and PATH entry, retaining its
     version files for already running processes.
@@ -164,3 +170,21 @@ atomic/serialized; source override changes do not bypass a configured frozen loc
 require('toolchain').lock(path, update) uses the same path and update policy.
 .lock_status() reports resolving/writing/written/failed; wait() includes export.
 User ToolchainLockWritten carries data.path only after a successful write.
+
+TOOL VERSION MANAGEMENT                                  *toolchain-versions*
+
+versions(name) and prune_plan(name) on require('toolchain.tools') return records
+with id/version/current/recorded/compatible/protected/reasons/candidate/root.
+Rollback(name, id) verifies artifacts and selects a recorded immutable version.
+Use .rollback in Lua (lowercase). Listing alone does not imply integrity.
+
+Setup/activation records current roots in a per-editor session lease; every root
+activated during that editor session remains protected until exit. Dead owners
+no longer protect roots; corrupt/unknown session records conservatively protect
+all retired versions. Active writers also protect their versions. Session
+metadata may be written for existing stores; setup never installs packages.
+
+ToolchainPrune is read-only, including for candidates. External programs and
+older editor sessions are not tracked, and no version files are deleted. Restart
+clients to use a newly selected version. Rollback leaves the project lock intact;
+ordinary install follows the frozen recipe again. q closes version reports.
