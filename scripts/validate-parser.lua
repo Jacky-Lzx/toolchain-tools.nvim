@@ -1,4 +1,7 @@
 local root, language = arg[1], arg[2]
+local plugin_root = vim.fs.dirname(vim.fs.dirname(debug.getinfo(1, "S").source:sub(2)))
+vim.opt.rtp:prepend(plugin_root)
+require("toolchain.runtime").setup()
 local paths = { root }
 vim.list_extend(paths, vim.json.decode(arg[3] or "[]"))
 paths[#paths + 1] = vim.env.VIMRUNTIME

@@ -9,21 +9,23 @@ function M.setup(opts)
   opts = opts or {}
   for key in pairs(opts) do
     assert(
-      vim.list_contains({ "install_dir", "cache_dir", "sources", "query_source" }, key),
+      vim.list_contains({ "install_dir", "cache_dir", "sources", "query_source", "filetypes" }, key),
       "Unknown parsers option: " .. key
     )
   end
-  options = vim.tbl_extend("force", {
+  local configured = vim.tbl_extend("force", {
     install_dir = vim.fs.joinpath(vim.fn.stdpath("data"), "toolchain-tools", "parsers"),
     cache_dir = vim.fs.joinpath(vim.fn.stdpath("cache"), "toolchain-tools", "parsers"),
     sources = {},
   }, opts)
   for _, key in ipairs({ "install_dir", "cache_dir" }) do
-    assert(type(options[key]) == "string" and options[key] ~= "", "Invalid parsers." .. key)
-    options[key] = vim.fs.normalize(vim.fn.fnamemodify(vim.fn.expand(options[key]), ":p")):gsub("/+$", "")
-    assert(options[key] ~= "", "Parser directories cannot be the filesystem root")
+    assert(type(configured[key]) == "string" and configured[key] ~= "", "Invalid parsers." .. key)
+    configured[key] = vim.fs.normalize(vim.fn.fnamemodify(vim.fn.expand(configured[key]), ":p")):gsub("/+$", "")
+    assert(configured[key] ~= "", "Parser directories cannot be the filesystem root")
   end
-  assert(type(options.sources) == "table", "parsers.sources must be a language table")
+  assert(type(configured.sources) == "table", "parsers.sources must be a language table")
+  require("toolchain.runtime").setup({ filetypes = configured.filetypes })
+  options = configured
   registry = nil
 end
 

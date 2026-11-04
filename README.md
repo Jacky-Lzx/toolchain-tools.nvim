@@ -57,7 +57,8 @@ them. `:Toolchain` opens the live task window.
 `provider = "parser"` downloads pinned Git commits, builds with `tree-sitter build`,
 and installs matching queries. It never requires nvim-treesitter Lua modules.
 The bundled registry covers the current language profiles and their query
-dependencies (35 definitions); see [source attribution](third_party/README.md).
+dependencies and previously installed fallback languages (48 definitions); see
+[source attribution](third_party/README.md).
 Queries remain pinned data from the upstream nvim-treesitter repository. This
 stage replaces installation, while reusing its maintained query collection.
 
@@ -114,8 +115,17 @@ dead owners can be recovered on retry. Build stdout/stderr goes to task logs.
 Inspect an installed language with
 `require("toolchain.parsers").info("latex")` (current/session roots, receipt, and
 artifact integrity). Existing parsers in `site/parser` are never overwritten.
-During migration, keep your existing runtime provider for languages that have
-not yet been independently installed, filetype aliases, or custom predicates.
+Setup also registers default filetype aliases and the `kind-eq?`/
+`any-kind-eq?` query predicates. Existing predicate providers and custom language
+associations are preserved. Explicit overrides use `parsers.filetypes = {
+tex = "my_latex" }`; `parsers.filetypes = false` skips default alias registration.
+An isolated build validator uses the same compatibility runtime.
+
+Before removing an older runtime provider, independently install any additional
+languages you still use. Existing `site/queries` symlinks may point into its
+checkout even when it is absent from runtimepath; do not rely on those links as
+evidence that the migration is complete. Managed query bundles are regular files
+with their own receipts. `nvim-treesitter-textobjects` remains a separate plugin.
 The `treesitter` provider remains available as an explicit compatibility adapter.
 
 ## Commands and task window
