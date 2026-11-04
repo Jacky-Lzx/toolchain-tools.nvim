@@ -4,10 +4,15 @@ permissions:
   contents: read
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        neovim: [v0.11.5, stable, nightly]
+        include:
+          - { os: ubuntu-latest, neovim: v0.11.5 }
+          - { os: ubuntu-latest, neovim: stable }
+          - { os: ubuntu-latest, neovim: nightly }
+          - { os: macos-latest, neovim: stable }
     steps:
       - uses: actions/checkout@v4
       - uses: rhysd/action-setup-vim@v1
@@ -35,3 +40,27 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo install tree-sitter-cli --version 0.26.1 --locked
       - run: sh tests/run.sh --parsers
+  clean-tools:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          version: stable
+          neovim: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Cold local registries and locked dependency replay
+        run: python3 tests/clean_tools.py
+      - name: Fresh LuaLS and debugpy installation and protocol startup
+        run: python3 tests/clean_protocols.py

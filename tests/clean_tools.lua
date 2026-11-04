@@ -60,6 +60,7 @@ tc.lock(lock, true)
 assert(tc.wait(120000) and tc.lock_status().state == "written", vim.inspect(tc.lock_status()))
 setup("cold-updated", true)
 install("2.0.0")
+assert(vim.fn.isdirectory(temp .. "/unrelated-global") == 0, "Host npm global prefixes must remain untouched")
 assert(not package.loaded.mason and not package.loaded["mason-registry"] and not package.loaded["nvim-treesitter"])
 io.stdout:write(
   "Clean npm/Python installation: cold caches, pinned transitives, repair and explicit lock update passed\n"

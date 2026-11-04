@@ -105,6 +105,7 @@ def main():
             XDG_STATE_HOME=directory + "/state", XDG_CACHE_HOME=directory + "/cache", NVIM_LOG_FILE=directory + "/nvim.log",
             NVIM_DEV_PLUGIN_ROOT=directory + "/missing-plugins", npm_config_registry="http://127.0.0.1:%d" % server.server_port,
             npm_config_audit="false", npm_config_fund="false", npm_config_userconfig=os.devnull,
+            npm_config_global="true", npm_config_prefix=directory + "/unrelated-global", npm_config_update_notifier="false",
             PIP_NO_INDEX="1", PIP_FIND_LINKS=str(temp / "wheels"), UV_NO_INDEX="1", UV_FIND_LINKS=str(temp / "wheels"),
             PATH=":".join(p for p in os.environ["PATH"].split(":") if "/mason/" not in p))
         try:

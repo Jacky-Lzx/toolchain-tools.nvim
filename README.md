@@ -418,17 +418,18 @@ Each task transition/output chunk emits `User ToolchainUpdated` with
 ## Installation boundaries
 
 - Concurrency limits submitted tasks. A backend may create child processes or
-  queue internally. Tree-sitter receives `max_jobs = 1` for each parser task,
-  including its implicit parser dependencies.
-- Running tasks cannot be cancelled safely across both backends in this version.
+  queue internally. The legacy `treesitter` adapter passes `max_jobs = 1` for
+  each task, including its implicit parser dependencies.
+- Running tasks cannot be cancelled safely across all installers in this version.
   They retain their slot until the backend completes; use queued cancellation.
 - Mason installations already running outside this queue produce a retryable
   failure rather than starting another installer.
-- The Tree-sitter backend checks actual parser installation, observes both task
-  errors and boolean failure results, and verifies the parser appears afterward.
-  Its upstream backend retains ownership of parser/query compatibility.
-- Persistent logs contain lifecycle events, native parser build output and Mason
-  stdout/stderr. The legacy `treesitter` adapter's build details remain in `:TSLog`.
+- The independent parser backend verifies pinned sources, compiled parsers and
+  query artifacts before activation. The optional legacy `treesitter` adapter
+  verifies upstream completion; its upstream backend owns compatibility.
+- Persistent logs contain lifecycle events, independent tool/parser build output
+  and optional Mason stdout/stderr. The legacy `treesitter` adapter's build
+  details remain in `:TSLog`.
 - Memory logs are bounded per task. The persistent log is append-only; rotate or
   remove it yourself when needed. Session tasks are not resumed after a restart.
 - Managed parser updates follow explicit pinned-source changes and integrity checks.
@@ -440,6 +441,8 @@ Each task transition/output chunk emits `User ToolchainUpdated` with
 ```sh
 sh tests/run.sh
 stylua --check lua scripts tests
+sh tests/run.sh --tools   # offline npm/Python registries; needs Node/npm and Python venv
+python3 tests/clean_protocols.py # downloads LuaLS/debugpy, frozen replay, real LSP/DAP
 sh tests/run.sh --parsers # offline real Git/build/rollback tests; needs tree-sitter CLI
 
 # Real upstream APIs and installation in disposable XDG directories; no downloads.
@@ -449,7 +452,8 @@ TOOLCHAIN_TREESITTER_ROOT=/absolute/path/to/nvim-treesitter \
 ```
 
 The default suite exercises queue lifecycle/failure handling, API behavior,
-backend contracts, and a real PTY task-window workflow. It needs Neovim and
+backend contracts, multi-process version protection, and real PTY task-window
+and version-management workflows. It needs Neovim and
 Python 3 on a Unix host. Integration additionally needs actual upstream
 checkouts, `tree-sitter`, a C compiler, and the grammar generator's requirements.
 It installs a local Mason package, compiles and loads a local parser, and checks
@@ -465,3 +469,26 @@ python3 tests/installed_tools.py --store /path/to/nvim/toolchain-tools/tools \
 
 This test needs the 16 migrated tools, a C compiler and their host runtimes. It
 uses temporary source/workspace files and does not install or update packages.
+
+CI runs core tests on Linux (Neovim 0.11.5, stable, nightly) and macOS (stable).
+Both platforms also install from empty stores and dependency caches: local npm
+and Python registries verify frozen dependencies, repair and explicit updates;
+real LuaLS/debugpy downloads verify frozen replay and LSP/DAP startup. These tests
+load neither Mason nor nvim-treesitter. Cold tests require Node/npm, Python 3
+with `venv`/pip, archive utilities and network access for the real downloads.
+Global npm install settings are overridden per command; private registry settings
+remain usable. Lock files do not install host runtimes or provide every upstream
+binary on every architecture.
+
+To reproduce Linux acceptance locally with an existing Docker engine:
+
+```sh
+docker build -f tests/linux/Dockerfile -t toolchain-tools-test tests/linux
+docker run --rm --cpus=2 --memory=1g --pids-limit=256 --network none \
+  -v "$PWD:/workspace:ro" toolchain-tools-test
+docker run --rm --cpus=2 --memory=1g --pids-limit=256 \
+  -v "$PWD:/workspace:ro" toolchain-tools-test python3 tests/clean_protocols.py
+```
+
+The checkout is mounted read-only. All tool stores and caches are disposable;
+the offline suite uses loopback fixture registries with external networking disabled.

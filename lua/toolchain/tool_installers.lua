@@ -119,12 +119,18 @@ local function npm(entry, root, log, previous)
     assert(vim.fn.writefile(vim.split(old, "\n", { plain = true }), root .. "/package-lock.json") == 0)
   end
   local env = entry.package == "@mermaid-js/mermaid-cli" and { PUPPETEER_CACHE_DIR = root .. "/browser" } or nil
-  run(
-    { "npm", old and "ci" or "install", "--omit=dev", "--no-audit", "--no-fund", "--no-progress" },
-    root,
-    log,
-    { env = env }
-  )
+  -- npm compares --prefix to the real cwd; alias paths can produce non-portable locks.
+  run({
+    "npm",
+    old and "ci" or "install",
+    "--prefix",
+    assert(vim.uv.fs_realpath(root)),
+    "--global=false",
+    "--omit=dev",
+    "--no-audit",
+    "--no-fund",
+    "--no-progress",
+  }, root, log, { env = env })
   return { locks = { ["package-lock.json"] = util.hash(util.read(root .. "/package-lock.json")) } }
 end
 
@@ -194,11 +200,14 @@ local function npm_build(entry, root, log)
   run({
     "npm",
     vim.fn.filereadable(path .. "/package-lock.json") == 1 and "ci" or "install",
+    "--prefix",
+    assert(vim.uv.fs_realpath(path)),
+    "--global=false",
     "--no-audit",
     "--no-fund",
     "--no-progress",
   }, path, log)
-  run({ "npm", "run", "package" }, path, log)
+  run({ "npm", "--prefix", assert(vim.uv.fs_realpath(path)), "--global=false", "run", "package" }, path, log)
   vim.fn.delete(path .. "/.git", "rf")
   return {
     revision = entry.revision,

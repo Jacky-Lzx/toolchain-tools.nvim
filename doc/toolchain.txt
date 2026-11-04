@@ -127,10 +127,8 @@ Override aliases with parsers.filetypes = { tex = 'my_latex' }; false skips defa
 
 Configure parsers.install_dir, parsers.cache_dir, parsers.sources (per-language
 overrides), parsers.filetypes and parsers.query_source. See README.md for the source schema. Inspect
-require('toolchain.parsers').info(language) for receipts and integrity. General
-package updates, uninstall and version pruning are not implemented.
-
- vim:tw=78:ts=8:noet:ft=help:norl:
+require('toolchain.parsers').info(language) for receipts and integrity. Parser
+uninstall and version pruning are not implemented; updates follow pinned sources.
 
 INDEPENDENT TOOLS                                        *toolchain-tools-store*
 
@@ -188,3 +186,17 @@ ToolchainPrune is read-only, including for candidates. External programs and
 older editor sessions are not tracked, and no version files are deleted. Restart
 clients to use a newly selected version. Rollback leaves the project lock intact;
 ordinary install follows the frozen recipe again. q closes version reports.
+
+VALIDATION                                                *toolchain-validation*
+
+sh tests/run.sh --tools runs isolated registry/dependency replay tests, alongside
+core and PTY workflows. It requires Node/npm and Python with venv/pip; registries
+are local fixtures. python3 tests/clean_protocols.py downloads real LuaLS/debugpy
+into empty stores, exports/replays a lock with fresh caches and exercises actual
+LSP initialization and a DAP launch/stop. No legacy plugin checkout is required.
+
+CI covers Linux Neovim 0.11.5/stable/nightly and macOS stable; cold tool/protocol
+tests run on both operating systems. See README.md for Docker reproduction and
+host prerequisites. The lock records dependencies, not host-runtime installers.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
 """Run actual migrated tools without loading either Neovim or Mason."""
 import argparse
 import json
 import os
-from pathlib import Path
-import queue
-import signal
 import socket
-import subprocess
 import tempfile
-import threading
-import time
+from pathlib import Path
+
+from tool_protocols import Protocol, run
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--store', type=Path, required=True)
@@ -22,65 +18,6 @@ def root(name):
     return STORE / 'versions' / name / pointer['version']
 def binary(name, command=None):
     return str(root(name) / 'bin' / (command or name))
-def run(args, **kwargs):
-    p = subprocess.run(args, capture_output=True, text=True, timeout=120, **kwargs)
-    assert p.returncode == 0, (args, p.returncode, p.stdout[-2000:], p.stderr[-3000:])
-    return p.stdout
-
-class Protocol:
-    def __init__(self, command, port=None):
-        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, start_new_session=True)
-        self.messages = queue.Queue()
-        self.diagnostics = bytearray()
-        def stderr():
-            for block in iter(lambda: self.process.stderr.read(4096), b''):
-                self.diagnostics.extend(block)
-        threading.Thread(target=stderr, daemon=True).start()
-        self.sock = None
-        if port:
-            deadline = time.monotonic() + 30
-            while True:
-                try:
-                    self.sock = socket.create_connection(('127.0.0.1',port), timeout=1)
-                    self.sock.settimeout(None)
-                    break
-                except OSError:
-                    if time.monotonic()>deadline: raise
-                    time.sleep(.05)
-            self.input = self.sock.makefile('wb',buffering=0)
-            self.output = self.sock.makefile('rb')
-        else:
-            self.input,self.output=self.process.stdin,self.process.stdout
-        def reader():
-            try:
-                while True:
-                    length=None
-                    while True:
-                        line=self.output.readline()
-                        if not line: return
-                        if line in (b'\r\n',b'\n'): break
-                        if line.lower().startswith(b'content-length:'): length=int(line.split(b':',1)[1])
-                    if length is not None:
-                        self.messages.put(json.loads(self.output.read(length)))
-            except Exception as e:self.messages.put({'reader_error':repr(e)})
-        threading.Thread(target=reader,daemon=True).start()
-    def send(self,value):
-        data=json.dumps(value).encode()
-        self.input.write(('Content-Length: %d\r\n\r\n'%len(data)).encode()+data);self.input.flush()
-    def until(self,predicate,seconds=45):
-        deadline=time.monotonic()+seconds
-        while time.monotonic()<deadline:
-            try:message=self.messages.get(timeout=max(.01,deadline-time.monotonic()))
-            except queue.Empty:break
-            if predicate(message):return message
-        raise AssertionError(('Protocol timeout',self.process.args,self.process.poll(),self.diagnostics.decode(errors='replace')[-3000:]))
-    def close(self):
-        if self.sock:self.sock.close()
-        if self.process.poll() is None:
-            os.killpg(self.process.pid,signal.SIGTERM)
-        try:self.process.wait(timeout=5)
-        except subprocess.TimeoutExpired:os.killpg(self.process.pid,signal.SIGKILL);self.process.wait()
 
 for name,command,args in [
     ('cmakelang','cmake-format',['--version']),('gdscript-formatter',None,['--version']),
@@ -125,7 +62,7 @@ with tempfile.TemporaryDirectory(prefix='toolchain-process-') as temp:
             launch={'name':'migration-test','type':'lldb','request':'launch','program':str(exe),'cwd':temp,'stopOnEntry':True}
         protocol=Protocol(args,port)
         try:
-            def request(seq,cmd,arguments):protocol.send({'seq':seq,'type':'request','command':cmd,'arguments':arguments})
+            def request(seq,cmd,arguments,protocol=protocol):protocol.send({'seq':seq,'type':'request','command':cmd,'arguments':arguments})
             request(1,'initialize',{'clientID':'toolchain-tools-test','adapterID':'python' if name=='debugpy' else 'lldb','linesStartAt1':True,'columnsStartAt1':True,'pathFormat':'path'})
             reply=protocol.until(lambda m:m.get('type')=='response' and m.get('request_seq')==1)
             assert reply.get('success'),reply
