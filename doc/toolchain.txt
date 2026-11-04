@@ -1,0 +1,83 @@
+*toolchain.txt*       Unified development dependency installation
+
+Requires Neovim 0.11+. Optional installation backends: mason.nvim v2 and
+nvim-treesitter main (not legacy master). See README.md for complete examples.
+
+COMMANDS                                                   *toolchain-commands*
+
+:Toolchain                                                    *:Toolchain*
+    Open the live installation task window.
+:ToolchainPlan                                                *:ToolchainPlan*
+    Inspect configured requirements. No registry refreshes or downloads.
+:ToolchainInstall [provider:name ...]                          *:ToolchainInstall*
+    Queue all configured requirements or selected IDs asynchronously.
+:ToolchainRetry [provider:name ...]                            *:ToolchainRetry*
+    Retry failed/cancelled tasks with their original declarations.
+:ToolchainCancel provider:name                                *:ToolchainCancel*
+    Cancel a queued task. Running tasks cannot be cancelled.
+:ToolchainLog                                                 *:ToolchainLog*
+    Open a read-only snapshot of the persistent JSON-lines log.
+:checkhealth toolchain
+    Validate declarations and report backend availability without installing.
+
+Window keys: i install all configured requirements; r retry selected; c cancel
+queued; Enter toggle details; q/Esc close without interrupting installation.
+
+SETUP                                                        *toolchain-setup*
+>lua
+    require('toolchain').setup({
+      concurrency = 2,
+      requirements = {
+        { provider = 'treesitter', name = 'lua' },
+        { provider = 'mason', name = 'stylua', executable = 'stylua' },
+        { provider = 'system', name = 'git' },
+      },
+    })
+<
+Call Mason's setup separately. Backend settings and PATH remain under your
+configuration's control. Requirements may also be a read-only function returning
+a list. Each entry has provider/name, plus optional executable, resolve (returns
+an executable path or nil), and Mason-only synchronous post_install(package).
+
+Other options: max_log_lines = 200 (bounded output chunks per task), notify = true
+(failure notifications), log_file = stdpath('state') .. '/toolchain-tools.log'
+(false disables persistence). Setup and require never start installations.
+
+API                                                          *toolchain-api*
+>lua
+    local tc = require('toolchain')
+    tc.plan()                    -- local checks; optional requirement list
+    tc.install()                 -- queue requirements; returns task IDs
+    tc.install_ids({'mason:stylua'})
+    tc.status()                  -- copied task states, messages, attempts, logs
+    tc.retry()                   -- optional list of failed/cancelled task IDs
+    tc.cancel('mason:stylua')     -- returns success, reason
+    local finished, tasks = tc.wait(300000)
+    tc.open()
+    tc.log_file()
+<
+wait() needs a finite timeout in milliseconds. Completion includes failed and
+cancelled tasks: check states for installed/skipped to determine success.
+
+Task IDs are provider:name. Active identical declarations share one task.
+Plan states: available, check (deferred backend check), missing (system), failed.
+Task states: queued, running, installed, skipped, failed, cancelled.
+
+User ToolchainUpdated fires for transitions/output; event.data contains id,
+state, attempt, message. Call status() to refresh custom UI integrations.
+
+BOUNDARIES                                                   *toolchain-boundaries*
+
+Concurrency limits submitted tasks, not every process inside an upstream
+installer. Only queued tasks can be cancelled. Existing system/Nix executables
+satisfy Mason requirements without installation or post_install hooks. Executables
+inside Mason's install root still receive Mason package checks and hooks.
+
+Logs contain lifecycle events and Mason output; Tree-sitter build output stays
+in :TSLog. Persistent logs are append-only. Task history lasts one session.
+setup() resets history and is rejected while tasks are queued or running.
+
+This version installs missing dependencies. It does not update, uninstall, lock
+versions, replace upstream build implementations, or configure editor features.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

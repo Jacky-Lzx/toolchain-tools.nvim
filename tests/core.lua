@@ -133,4 +133,28 @@ t.test("active conflicts are atomic and running tasks cannot be cancelled", func
   end)
 end)
 
+t.test("installer output is bounded and invalid completion states fail safely", function()
+  local q = Queue.new({
+    concurrency = 1,
+    max_log_lines = 2,
+    execute = function(_, ctx)
+      ctx.log("discard this chunk")
+      ctx.log("keep this chunk")
+      ctx.log(string.rep("x", 9000))
+      vim.schedule(function()
+        ctx.done("unknown")
+      end)
+    end,
+  })
+  q:submit({ spec("one") })
+  t.wait(function()
+    return not q:busy()
+  end)
+  local task = q:snapshot()[1]
+  t.eq(#task.logs, 2)
+  t.eq(task.logs[1], "keep this chunk")
+  t.eq(#task.logs[2], 8192)
+  t.eq(task.state, "failed")
+end)
+
 t.done()
