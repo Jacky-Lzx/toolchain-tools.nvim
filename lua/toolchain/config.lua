@@ -9,6 +9,7 @@ local fields = {
   post_install = true,
   post_install_async = true,
   optional = true,
+  unlocked = true,
 }
 
 function M.normalize(requirements)
@@ -41,6 +42,10 @@ function M.normalize(requirements)
     assert(
       (entry.provider ~= "treesitter" and entry.provider ~= "parser") or not (entry.executable or entry.resolve),
       "Tree-sitter requirements cannot use executable resolvers"
+    )
+    assert(
+      entry.unlocked == nil or (entry.provider == "tool" and type(entry.unlocked) == "boolean"),
+      "unlocked is a tool-only boolean"
     )
     local id = entry.provider .. ":" .. entry.name
     assert(not seen[id] or vim.deep_equal(seen[id], entry), "conflicting declarations for " .. id)

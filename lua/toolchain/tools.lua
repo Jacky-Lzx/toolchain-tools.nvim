@@ -27,18 +27,23 @@ end
 function M.setup(opts)
   opts = opts or {}
   for key in pairs(opts) do
-    assert(vim.list_contains({ "install_dir", "sources", "path" }, key), "Unknown tools option: " .. key)
+    assert(vim.list_contains({ "install_dir", "sources", "path", "lockfile" }, key), "Unknown tools option: " .. key)
   end
   local new = vim.tbl_extend("force", {
     install_dir = vim.fn.stdpath("data") .. "/toolchain-tools/tools",
     sources = {},
     path = "append",
+    lockfile = false,
   }, opts)
   assert(type(new.install_dir) == "string" and new.install_dir ~= "", "Invalid tools.install_dir")
   new.install_dir = vim.fs.normalize(vim.fn.fnamemodify(vim.fn.expand(new.install_dir), ":p")):gsub("/+$", "")
   assert(new.install_dir ~= "", "Tools directory cannot be the filesystem root")
   assert(type(new.sources) == "table", "tools.sources must be a package table")
   assert(new.path == "append" or new.path == "skip", "tools.path must be append or skip")
+  assert(new.lockfile == false or (type(new.lockfile) == "string" and new.lockfile ~= ""), "Invalid tools.lockfile")
+  if new.lockfile then
+    new.lockfile = vim.fs.normalize(vim.fn.fnamemodify(vim.fn.expand(new.lockfile), ":p"))
+  end
   options, registry = new, nil
 end
 
@@ -49,7 +54,7 @@ local function settings()
   return options
 end
 
-function M.definition(package_name)
+function M.definition(package_name, unlocked)
   name(package_name)
   if not registry then
     registry = assert(util.json(plugin .. "/data/tools.json"), "Cannot read bundled tool registry").packages
@@ -58,7 +63,10 @@ function M.definition(package_name)
       registry[key] = vim.deepcopy(entry)
     end
   end
-  local entry = vim.deepcopy(assert(registry[package_name], "Unknown independent tool: " .. package_name))
+  local entry = settings().lockfile
+      and not unlocked
+      and require("toolchain.tool_lock").entry(settings().lockfile, package_name)
+    or vim.deepcopy(assert(registry[package_name], "Unknown independent tool: " .. package_name))
   assert(type(entry) == "table" and type(entry.kind) == "string", "Invalid tool recipe: " .. package_name)
   assert(type(entry.version) == "string" and entry.version ~= "", "Tool version must be pinned")
   if entry.kind == "download" then
@@ -218,9 +226,38 @@ local function intact(root, desired)
   return ok and vim.deep_equal(actual, expected)
 end
 
-function M.info(package_name)
+function M.installed(package_name)
   local root, value = receipt(package_name)
-  return { current = root, receipt = value, intact = intact(root, fingerprint(M.definition(package_name))) }
+  return {
+    current = root,
+    receipt = value,
+    intact = value and type(value.recipe) == "table" and intact(root, fingerprint(value.recipe)) or false,
+  }
+end
+
+function M.info(package_name)
+  local result = M.installed(package_name)
+  result.intact = result.intact
+    and require("toolchain.tool_lock").matches(result.current, result.receipt, M.definition(package_name))
+  return result
+end
+
+function M.lockfile()
+  return settings().lockfile or (vim.fn.getcwd() .. "/toolchain-lock.json")
+end
+
+function M.export_lock(path, names)
+  local entries = {}
+  for _, package_name in ipairs(names) do
+    local info = M.installed(package_name)
+    assert(
+      info.current and info.intact,
+      "Install/repair " .. package_name .. " independently first, or use :ToolchainLock!"
+    )
+    entries[package_name] = require("toolchain.tool_lock").capture(info.current, info.receipt)
+  end
+  require("toolchain.tool_lock").write(path or M.lockfile(), entries)
+  return path or M.lockfile()
 end
 
 function M.remove(package_name)
@@ -323,10 +360,15 @@ function M.install(spec, ctx)
   local root, release, published
   util.run(function()
     assert(vim.fn.has("win32") == 0, "Independent tools currently support macOS and Linux")
-    local entry = M.definition(spec.name)
+    local entry = M.definition(spec.name, spec.unlocked)
     release = util.lock(settings().install_dir .. "/locks/" .. spec.name .. ".lock")
     local desired, previous = fingerprint(entry), active(spec.name)
-    if intact(previous, desired) then
+    local previous_receipt = previous and util.json(previous .. "/receipt.json")
+    if
+      previous_receipt
+      and require("toolchain.tool_lock").matches(previous, previous_receipt, entry)
+      and intact(previous, fingerprint(previous_receipt.recipe))
+    then
       M.activate()
       return "skipped"
     end
@@ -334,10 +376,10 @@ function M.install(spec, ctx)
     -- Build at the permanent version path: Python venv shebangs cannot be relocated.
     root = settings().install_dir .. "/versions/" .. spec.name .. "/" .. token
     vim.fn.mkdir(root, "p")
-    local previous_receipt = previous and util.json(previous .. "/receipt.json")
     local reusable = previous_receipt and previous_receipt.fingerprint == desired and previous or nil
     local metadata = require("toolchain.tool_installers").install(entry, root, ctx.log, reusable)
     hook(spec, root, entry, ctx.log)
+    require("toolchain.tool_lock").verify(root, entry)
     wrappers(root, entry)
     util.write_json(root .. "/receipt.json", {
       schema = 1,

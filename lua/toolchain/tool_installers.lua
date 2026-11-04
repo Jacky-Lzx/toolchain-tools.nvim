@@ -54,7 +54,8 @@ local function download(entry, root, log)
       file.url,
     }, root, log)
     local hash = digest(path, root, log)
-    assert(not file.sha256 or file.sha256 == hash, "Downloaded tool checksum does not match")
+    local expected = entry._lock and entry._lock.downloads and entry._lock.downloads[file.url] or file.sha256
+    assert(not expected or expected == hash, "Downloaded tool checksum does not match the recipe/lock")
     metadata.downloads[#metadata.downloads + 1] = { url = file.url, sha256 = hash }
     local target = root .. "/payload"
     if file.destination and file.destination ~= "" then
@@ -112,7 +113,8 @@ local function npm(entry, root, log, previous)
     root .. "/package.json",
     { name = "toolchain-managed-tool", version = "1.0.0", private = true, dependencies = dependencies }
   )
-  local old = previous_lock(previous, "package-lock.json")
+  local old = require("toolchain.tool_lock").file(entry, "package-lock.json")
+    or previous_lock(previous, "package-lock.json")
   if old then
     assert(vim.fn.writefile(vim.split(old, "\n", { plain = true }), root .. "/package-lock.json") == 0)
   end
@@ -128,19 +130,37 @@ end
 
 local function pypi(entry, root, log, previous)
   local python
-  for _, executable in ipairs({ "python3.14", "python3.13", "python3.12", "python3.11", "python3.10", "python3" }) do
+  local required = entry._lock and entry._lock.python
+  local candidates = { "python3.14", "python3.13", "python3.12", "python3.11", "python3.10", "python3" }
+  if required then
+    table.insert(candidates, 1, "python" .. required)
+  end
+  for _, executable in ipairs(candidates) do
     local found = vim.fn.exepath(executable)
     if found ~= "" then
-      python = found
-      break
+      local version = required
+        and run(
+          { found, "-c", "import sys; print(str(sys.version_info.major) + '.' + str(sys.version_info.minor))" },
+          root,
+          log
+        ):gsub("%s+$", "")
+      if not required or version == required then
+        python = found
+        break
+      end
     end
   end
-  assert(python, "Python 3 with venv support is required")
+  assert(
+    python,
+    required and ("Locked Python " .. required .. " with venv support is required")
+      or "Python 3 with venv support is required"
+  )
   run({ python, "-m", "venv", root .. "/venv" }, root, log)
   local uv_available = vim.fn.executable("uv") == 1
   local command = uv_available and { "uv", "pip", "install", "--python", root .. "/venv/bin/python", "--no-progress" }
     or { root .. "/venv/bin/python", "-m", "pip", "install", "--disable-pip-version-check", "--no-input" }
-  local old = previous_lock(previous, "requirements.lock")
+  local old = require("toolchain.tool_lock").file(entry, "requirements.lock")
+    or previous_lock(previous, "requirements.lock")
   if old then
     assert(vim.fn.writefile(vim.split(old, "\n", { plain = true }), root .. "/requirements.lock") == 0)
     vim.list_extend(command, { "-r", root .. "/requirements.lock" })
@@ -167,6 +187,10 @@ local function npm_build(entry, root, log)
   run({ "git", "remote", "add", "origin", entry.repository }, path, log)
   run({ "git", "fetch", "--depth=1", "origin", entry.revision }, path, log)
   run({ "git", "checkout", "--quiet", "--detach", "FETCH_HEAD" }, path, log)
+  local frozen = require("toolchain.tool_lock").file(entry, "payload/package-lock.json")
+  if frozen then
+    assert(vim.fn.writefile(vim.split(frozen, "\n", { plain = true }), path .. "/package-lock.json") == 0)
+  end
   run({
     "npm",
     vim.fn.filereadable(path .. "/package-lock.json") == 1 and "ci" or "install",
@@ -176,7 +200,10 @@ local function npm_build(entry, root, log)
   }, path, log)
   run({ "npm", "run", "package" }, path, log)
   vim.fn.delete(path .. "/.git", "rf")
-  return { revision = entry.revision }
+  return {
+    revision = entry.revision,
+    locks = { ["payload/package-lock.json"] = util.hash(util.read(path .. "/package-lock.json")) },
+  }
 end
 
 function M.install(entry, root, log, previous)
@@ -194,19 +221,34 @@ function M.install(entry, root, log, previous)
   end
   if entry.kind == "cargo" then
     assert(entry.repository:match("^https://"), "Cargo repository must use HTTPS")
+    local revision = entry._lock and entry._lock.revision
+    if not revision then
+      local refs = run(
+        { "git", "ls-remote", entry.repository, "refs/tags/" .. entry.version, "refs/tags/" .. entry.version .. "^{}" },
+        root,
+        log
+      )
+      for line in refs:gmatch("[^\r\n]+") do
+        local sha, ref = line:match("^([a-f0-9]+)%s+(.+)$")
+        if sha and (not revision or ref:sub(-3) == "^{}") then
+          revision = sha
+        end
+      end
+    end
+    assert(revision and #revision == 40, "Cannot resolve the pinned Cargo source revision")
     run({
       "cargo",
       "install",
       "--git",
       entry.repository,
-      "--tag",
-      entry.version,
+      "--rev",
+      revision,
       "--locked",
       "--root",
       root .. "/payload",
       entry.package,
     }, root, log)
-    return { source = entry.repository, tag = entry.version }
+    return { source = entry.repository, tag = entry.version, revision = revision }
   end
   assert(entry.kind == "commands", "Unsupported tool installer: " .. entry.kind)
   for _, command in ipairs(entry.commands) do

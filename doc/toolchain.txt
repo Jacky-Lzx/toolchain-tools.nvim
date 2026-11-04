@@ -18,6 +18,10 @@ COMMANDS                                                   *toolchain-commands*
     Cancel a queued task. Running tasks cannot be cancelled.
 :ToolchainLog                                                 *:ToolchainLog*
     Open a read-only snapshot of the persistent JSON-lines log.
+:ToolchainLock[!] [file]                                      *:ToolchainLock*
+    Export a portable tool lock. ! explicitly resolves configured managed tools
+    first, including managed copies of system-provided tools. Ordinary installs
+    use tools.lockfile without rewriting it; export failure retains the old file.
 :ToolchainUninstall tool:<package>
     Remove an independent tool activation pointer and PATH entry, retaining its
     version files for already running processes.
@@ -141,3 +145,22 @@ require('toolchain.tools').executable(package, command) returns a managed wrappe
 Tool hooks receive { name, path, version, resources } before publication; intact
 versions skip hooks. Use ToolchainInstall after updating the pinned recipe.
 Restart existing clients after installing a new tool version.
+
+PROJECT TOOL LOCKS                                          *toolchain-locks*
+
+Set tools.lockfile to a configuration-owned JSON path (default false). Export an
+initial snapshot with ToolchainLock!, then commit it. Each platform records full
+recipes, release SHA-256 digests, npm/Python dependencies and Cargo commit SHAs.
+Missing platform/package entries fail explicit managed installation; setup and
+plans remain offline. Ordinary installs retain system/Nix executable priority.
+Python requires the recorded interpreter major/minor version. System tools and
+host runtimes remain external prerequisites; custom hooks must be deterministic.
+
+ToolchainLock exports existing verified managed versions. ToolchainLock! resolves
+current bundled/custom recipes and writes only after every selected task succeeds.
+Other platform entries are preserved. Both replacement and export merges are
+atomic/serialized; source override changes do not bypass a configured frozen lock.
+
+require('toolchain').lock(path, update) uses the same path and update policy.
+.lock_status() reports resolving/writing/written/failed; wait() includes export.
+User ToolchainLockWritten carries data.path only after a successful write.

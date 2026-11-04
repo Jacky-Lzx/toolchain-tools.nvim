@@ -45,6 +45,14 @@ function M.setup()
     end,
     { nargs = 1, complete = completion, desc = "Deactivate an independent tool, retaining files for running processes" }
   )
+  command("ToolchainLock", function(args)
+    require("toolchain").lock(args.fargs[1], args.bang)
+  end, {
+    nargs = "?",
+    bang = true,
+    complete = "file",
+    desc = "Export a portable tool lock; ! resolves configured recipes explicitly",
+  })
   command("ToolchainRetry", function(args)
     require("toolchain").retry(#args.fargs > 0 and args.fargs or nil)
   end, { nargs = "*", complete = completion, desc = "Retry failed, unavailable or cancelled tasks" })

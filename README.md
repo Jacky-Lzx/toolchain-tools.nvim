@@ -59,10 +59,10 @@ virtual environments, Cargo Git tags, and pinned npm source builds. The initial
 platforms are macOS and Linux on x86-64/ARM64, subject to upstream asset availability.
 For example, the current clangd release requires a system package on Linux ARM64.
 
-New npm/Python installations record their resolved dependency versions. Repairs
-reuse intact lockfiles from the same recipe; initial resolutions are not universal
-transitive dependency locks. Download receipts record SHA-256; recipes may also
-provide an expected `sha256` for verification.
+New npm/Python installations record their resolved dependency versions. Without a
+project lock, initial resolutions can select new transitive versions. A project
+lock freezes the complete recipes, verified release digests, npm/Python dependency
+locks and resolved Cargo commit for each recorded platform. See below.
 
 Recipes can be supplied through `tools.sources`. Setup only appends existing
 managed binary directories to PATH (`tools.path = "skip"` disables this); it
@@ -87,6 +87,48 @@ configuration caches live outside their version directories.
 the current root, receipt and integrity. Post-install hooks for `tool` receive a
 neutral `{ name, path, version, resources }` record before publication. Intact
 installations skip their hooks; changing a recipe creates a new version.
+
+## Project tool locks
+
+```lua
+require("toolchain").setup({
+  tools = { lockfile = "/path/to/config/toolchain-lock.json" },
+  requirements = {
+    { provider = "tool", name = "stylua", executable = "stylua" },
+    { provider = "tool", name = "debugpy" },
+  },
+})
+```
+
+- `:ToolchainLock! [file]` explicitly resolves configured tool recipes, installing
+  managed copies even when system tools exist, then atomically writes the lock.
+- `:ToolchainLock [file]` exports already installed, intact managed versions;
+  it fails if any configured tool lacks a verified installation.
+- Ordinary `:ToolchainInstall` reads `tools.lockfile` without rewriting it. A
+  missing platform/package entry fails before its installer resolves anything.
+  Source overrides and bundled registry changes take effect only on explicit
+  lock updates. Set `tools.lockfile = false` to use unlocked recipes.
+
+Commit the lock with your configuration. Locks contain no installation roots or
+Python environment paths. Each platform has a separate entry; generating a lock
+on another platform preserves existing platform entries. Python installs require
+an available interpreter with the recorded major/minor version. Host runtimes,
+system/Nix tools and custom build commands remain external prerequisites.
+System tools still take priority during ordinary installation; locks govern the
+managed fallback. Custom post-install hooks must remain deterministic.
+
+New stores and repairs use `npm ci`, the frozen Python requirements, exact release
+checksums, and Cargo `--rev` with a full commit SHA. Frozen dependency verification
+happens before publication. Failed resolution, checksum verification or export
+retains the previous current version and lock file. Startup/planning never write
+or resolve a lock. Export merges are serialized across processes.
+
+Lua APIs: `require("toolchain").lock(path, update)` (update defaults to false),
+`.lock_status()` (`resolving`, `writing`, `written` or `failed`), and `.wait()` for
+queued resolution/export completion. `User ToolchainLockWritten` fires only after
+an atomic write. `unlocked = true` is an explicit tool-only requirement override
+used by lock updates. A lock snapshot covers independent `tool` requirements;
+parser Git/query pins continue to come from the parser registry.
 
 ## Independent parser installation
 
@@ -171,6 +213,7 @@ The `treesitter` provider remains available as an explicit compatibility adapter
 | `:Toolchain` | Show tasks from this Neovim session |
 | `:ToolchainPlan` | Show configured requirements and local executable availability |
 | `:ToolchainInstall [provider:name ...]` | Install all configured requirements or selected IDs |
+| `:ToolchainLock[!] [file]` | Export installed tools; `!` explicitly resolves managed recipes first |
 | `:ToolchainUninstall tool:name` | Deactivate an independent tool; retain its version files |
 | `:ToolchainRetry [provider:name ...]` | Retry failed, unavailable, or cancelled tasks using their original declaration |
 | `:ToolchainCancel provider:name` | Cancel a task that is still queued |
