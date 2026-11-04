@@ -52,6 +52,23 @@ only work submitted through toolchain-tools belongs to this queue.
 Run `:ToolchainPlan` to inspect requirements, then `:ToolchainInstall` to install
 them. `:Toolchain` opens the live task window.
 
+## Independent tool backend
+
+The `tool` provider installs into its own versioned store without Mason APIs.
+Tool recipes can be supplied through `tools.sources`. Setup only appends existing
+managed binary directories to PATH (`tools.path = "skip"` disables this); it
+never downloads or creates directories. System/Nix executables retain priority.
+Installations build at their final version path so Python virtual environments
+remain valid, and publish an atomic current-version pointer only after validation.
+Failed installations retain the previous version. Old versions are kept for running
+processes. Explicit installs verify artifacts and repair changed or missing files.
+
+`require("toolchain.tools").executable(package, command)` resolves a managed binary;
+`.path(package, resource)` resolves declared resources, and `.info(package)` reports
+the current root, receipt and integrity. Post-install hooks for `tool` receive a
+neutral `{ name, path, version, resources }` record before publication. Intact
+installations skip their hooks; changing a recipe creates a new version.
+
 ## Independent parser installation
 
 `provider = "parser"` downloads pinned Git commits, builds with `tree-sitter build`,

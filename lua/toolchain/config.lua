@@ -1,6 +1,6 @@
 local M = {}
 
-local providers = { mason = true, treesitter = true, parser = true, system = true }
+local providers = { tool = true, mason = true, treesitter = true, parser = true, system = true }
 local fields = {
   provider = true,
   name = true,
@@ -35,8 +35,8 @@ function M.normalize(requirements)
     )
     assert(not (entry.post_install and entry.post_install_async), "choose post_install or post_install_async, not both")
     assert(
-      not (entry.post_install or entry.post_install_async) or entry.provider == "mason",
-      "post_install hooks are only supported for Mason packages"
+      not (entry.post_install or entry.post_install_async) or (entry.provider == "mason" or entry.provider == "tool"),
+      "post_install hooks are only supported for managed tool packages"
     )
     assert(
       (entry.provider ~= "treesitter" and entry.provider ~= "parser") or not (entry.executable or entry.resolve),
@@ -55,8 +55,15 @@ end
 function M.options(opts)
   opts = opts or {}
   assert(type(opts) == "table", "options must be a table")
-  local allowed =
-    { requirements = true, concurrency = true, max_log_lines = true, log_file = true, notify = true, parsers = true }
+  local allowed = {
+    requirements = true,
+    concurrency = true,
+    max_log_lines = true,
+    log_file = true,
+    notify = true,
+    parsers = true,
+    tools = true,
+  }
   for key in pairs(opts) do
     assert(allowed[key], "unknown option: " .. tostring(key))
   end
@@ -79,6 +86,7 @@ function M.options(opts)
   if type(result.requirements) ~= "function" then
     result.requirements = M.normalize(result.requirements)
   end
+  assert(result.tools == nil or type(result.tools) == "table", "tools must be a table")
   return result
 end
 

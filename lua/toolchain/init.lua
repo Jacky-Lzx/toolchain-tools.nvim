@@ -22,7 +22,7 @@ local function changed(event)
 end
 
 local function execute(spec, ctx)
-  if spec.provider == "mason" then
+  if spec.provider == "mason" or spec.provider == "tool" then
     local path = require("toolchain.backends.system").external(spec)
     if path then
       return ctx.done("skipped", "Using existing executable: " .. path)
@@ -41,8 +41,10 @@ function M.setup(opts)
   assert(not queue or not queue:busy(), "Cannot reconfigure toolchain-tools while tasks are queued or running")
   local new_options = config.options(opts)
   require("toolchain.parsers").setup(new_options.parsers)
+  require("toolchain.tools").setup(new_options.tools)
   options = new_options
   require("toolchain.parsers").activate()
+  require("toolchain.tools").activate()
   log_error_reported = false
   queue = require("toolchain.queue").new({
     concurrency = options.concurrency,
@@ -71,7 +73,8 @@ function M.plan(input)
     local state, message = "check", "Check the backend when installation is requested"
     if spec.provider ~= "treesitter" and spec.provider ~= "parser" then
       local system = require("toolchain.backends.system")
-      local ok, path = pcall(spec.provider == "mason" and system.external or system.find, spec)
+      local ok, path =
+        pcall((spec.provider == "mason" or spec.provider == "tool") and system.external or system.find, spec)
       if not ok then
         state, message = "failed", tostring(path)
       elseif path then

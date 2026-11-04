@@ -37,7 +37,7 @@ function M.external(spec)
   if vim.fn.has("win32") == 1 then
     normalized_root, normalized_path = normalized_root:lower(), normalized_path:lower()
   end
-  if not vim.startswith(normalized_path, normalized_root .. "/") then
+  if not vim.startswith(normalized_path, normalized_root .. "/") and not require("toolchain.tools").owns(path) then
     return path
   end
 end

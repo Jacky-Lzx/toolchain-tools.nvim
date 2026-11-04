@@ -19,7 +19,9 @@ function M.check()
     end
   end
   for provider in pairs(needed) do
-    if provider == "parser" then
+    if provider == "tool" then
+      vim.health.info("Independent tools use pinned recipes and host package managers; no Mason API is used")
+    elseif provider == "parser" then
       vim.health.info("Independent parsers use git, tree-sitter CLI and a C compiler; no nvim-treesitter API is used")
     else
       local module = provider == "mason" and "mason" or "nvim-treesitter"
