@@ -1,1 +1,2110 @@
-{"schema":1,"packages":{}}
+{
+  "packages": {
+    "basedpyright": {
+      "bin": {
+        "basedpyright": {
+          "path": "venv/bin/basedpyright"
+        },
+        "basedpyright-langserver": {
+          "path": "venv/bin/basedpyright-langserver"
+        }
+      },
+      "kind": "pypi",
+      "package": "basedpyright",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "1.40.2"
+    },
+    "bash-language-server": {
+      "bin": {
+        "bash-language-server": {
+          "path": "node_modules/.bin/bash-language-server"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "bash-language-server",
+      "version": "5.8.1"
+    },
+    "clangd": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "clangd": {
+              "path": "payload/clangd_23.1.0/bin/clangd"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "clangd-mac-23.1.0.zip",
+              "url": "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-mac-23.1.0.zip"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "clangd": {
+              "path": "payload/clangd_23.1.0/bin/clangd"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "clangd-mac-23.1.0.zip",
+              "url": "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-mac-23.1.0.zip"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "clangd": {
+              "path": "payload/clangd_23.1.0/bin/clangd"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "clangd-linux-23.1.0.zip",
+              "url": "https://github.com/clangd/clangd/releases/download/23.1.0/clangd-linux-23.1.0.zip"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "clangd": {
+          "path": "payload/clangd_23.1.0/bin/clangd"
+        }
+      },
+      "kind": "download",
+      "version": "23.1.0"
+    },
+    "cmake-language-server": {
+      "bin": {
+        "cmake-language-server": {
+          "path": "venv/bin/cmake-language-server"
+        }
+      },
+      "kind": "pypi",
+      "package": "cmake-language-server",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "0.1.11"
+    },
+    "cmakelang": {
+      "bin": {
+        "cmake-annotate": {
+          "path": "venv/bin/cmake-annotate"
+        },
+        "cmake-format": {
+          "path": "venv/bin/cmake-format"
+        },
+        "cmake-lint": {
+          "path": "venv/bin/cmake-lint"
+        },
+        "ctest-to": {
+          "path": "venv/bin/ctest-to"
+        }
+      },
+      "kind": "pypi",
+      "package": "cmakelang[YAML]",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "0.6.13"
+    },
+    "codelldb": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "codelldb": {
+              "path": "payload/extension/adapter/codelldb"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "codelldb-darwin-arm64.vsix",
+              "url": "https://github.com/vadimcn/vscode-lldb/releases/download/v1.12.3/codelldb-darwin-arm64.vsix"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "codelldb": {
+              "path": "payload/extension/adapter/codelldb"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "codelldb-darwin-x64.vsix",
+              "url": "https://github.com/vadimcn/vscode-lldb/releases/download/v1.12.3/codelldb-darwin-x64.vsix"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "codelldb": {
+              "path": "payload/extension/adapter/codelldb"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "codelldb-linux-arm64.vsix",
+              "url": "https://github.com/vadimcn/vscode-lldb/releases/download/v1.12.3/codelldb-linux-arm64.vsix"
+            }
+          ]
+        },
+        "linux_arm_gnu": {
+          "bin": {
+            "codelldb": {
+              "path": "payload/extension/adapter/codelldb"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "codelldb-linux-armhf.vsix",
+              "url": "https://github.com/vadimcn/vscode-lldb/releases/download/v1.12.3/codelldb-linux-armhf.vsix"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "codelldb": {
+              "path": "payload/extension/adapter/codelldb"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "codelldb-linux-x64.vsix",
+              "url": "https://github.com/vadimcn/vscode-lldb/releases/download/v1.12.3/codelldb-linux-x64.vsix"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "codelldb": {
+          "path": "payload/extension/adapter/codelldb"
+        }
+      },
+      "kind": "download",
+      "resources": {
+        "lldb": "payload/extension/lldb"
+      },
+      "version": "v1.12.3"
+    },
+    "codespell": {
+      "bin": {
+        "codespell": {
+          "path": "venv/bin/codespell"
+        }
+      },
+      "kind": "pypi",
+      "package": "codespell",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "2.4.3"
+    },
+    "debugpy": {
+      "bin": {
+        "debugpy": {
+          "interpreter": "python",
+          "module": "debugpy",
+          "path": "venv/bin/python"
+        },
+        "debugpy-adapter": {
+          "interpreter": "python",
+          "module": "debugpy.adapter",
+          "path": "venv/bin/python"
+        }
+      },
+      "kind": "pypi",
+      "package": "debugpy",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "1.8.22"
+    },
+    "gdscript-formatter": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "gdscript-formatter": {
+              "path": "payload/gdscript-formatter-0.28.0-macos-aarch64"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "gdscript-formatter-0.28.0-macos-aarch64.zip",
+              "url": "https://github.com/GDQuest/GDScript-formatter/releases/download/0.28.0/gdscript-formatter-0.28.0-macos-aarch64.zip"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "gdscript-formatter": {
+              "path": "payload/gdscript-formatter-0.28.0-macos-x86_64"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "gdscript-formatter-0.28.0-macos-x86_64.zip",
+              "url": "https://github.com/GDQuest/GDScript-formatter/releases/download/0.28.0/gdscript-formatter-0.28.0-macos-x86_64.zip"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "gdscript-formatter": {
+              "path": "payload/gdscript-formatter-0.28.0-linux-aarch64"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "gdscript-formatter-0.28.0-linux-aarch64.zip",
+              "url": "https://github.com/GDQuest/GDScript-formatter/releases/download/0.28.0/gdscript-formatter-0.28.0-linux-aarch64.zip"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "gdscript-formatter": {
+              "path": "payload/gdscript-formatter-0.28.0-linux-x86_64"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "gdscript-formatter-0.28.0-linux-x86_64.zip",
+              "url": "https://github.com/GDQuest/GDScript-formatter/releases/download/0.28.0/gdscript-formatter-0.28.0-linux-x86_64.zip"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "gdscript-formatter": {
+          "path": "payload/gdscript-formatter-0.28.0-macos-x86_64"
+        }
+      },
+      "kind": "download",
+      "version": "0.28.0"
+    },
+    "gdtoolkit": {
+      "bin": {
+        "gdformat": {
+          "path": "venv/bin/gdformat"
+        },
+        "gdlint": {
+          "path": "venv/bin/gdlint"
+        }
+      },
+      "kind": "pypi",
+      "package": "gdtoolkit",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "4.5.0"
+    },
+    "harper-ls": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "harper-ls": {
+              "path": "payload/harper-ls"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "harper-ls-aarch64-apple-darwin.tar.gz",
+              "url": "https://github.com/elijah-potter/harper/releases/download/v3.0.0/harper-ls-aarch64-apple-darwin.tar.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "harper-ls": {
+              "path": "payload/harper-ls"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "harper-ls-x86_64-apple-darwin.tar.gz",
+              "url": "https://github.com/elijah-potter/harper/releases/download/v3.0.0/harper-ls-x86_64-apple-darwin.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "harper-ls": {
+              "path": "payload/harper-ls"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "harper-ls-aarch64-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/elijah-potter/harper/releases/download/v3.0.0/harper-ls-aarch64-unknown-linux-gnu.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64_musl": {
+          "bin": {
+            "harper-ls": {
+              "path": "payload/harper-ls"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "harper-ls-aarch64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/elijah-potter/harper/releases/download/v3.0.0/harper-ls-aarch64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "harper-ls": {
+              "path": "payload/harper-ls"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "harper-ls-x86_64-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/elijah-potter/harper/releases/download/v3.0.0/harper-ls-x86_64-unknown-linux-gnu.tar.gz"
+            }
+          ]
+        },
+        "linux_x64_musl": {
+          "bin": {
+            "harper-ls": {
+              "path": "payload/harper-ls"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "harper-ls-x86_64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/elijah-potter/harper/releases/download/v3.0.0/harper-ls-x86_64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "harper-ls": {
+          "path": "payload/harper-ls"
+        }
+      },
+      "kind": "download",
+      "version": "v3.0.0"
+    },
+    "jdtls": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "jdtls": {
+              "args": [
+                "-configuration",
+                "{cache}/jdtls/{instance}/configuration"
+              ],
+              "interpreter": "python3",
+              "path": "payload/bin/jdtls"
+            }
+          },
+          "config": "config_mac/",
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "jdtls.tar.gz",
+              "url": "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-1.63.0-202610191322.tar.gz"
+            },
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "lombok.jar",
+              "url": "https://projectlombok.org/downloads/lombok-1.18.48.jar"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "jdtls": {
+              "args": [
+                "-configuration",
+                "{cache}/jdtls/{instance}/configuration"
+              ],
+              "interpreter": "python3",
+              "path": "payload/bin/jdtls"
+            }
+          },
+          "config": "config_mac/",
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "jdtls.tar.gz",
+              "url": "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-1.63.0-202610191322.tar.gz"
+            },
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "lombok.jar",
+              "url": "https://projectlombok.org/downloads/lombok-1.18.48.jar"
+            }
+          ]
+        },
+        "linux": {
+          "bin": {
+            "jdtls": {
+              "args": [
+                "-configuration",
+                "{cache}/jdtls/{instance}/configuration"
+              ],
+              "interpreter": "python3",
+              "path": "payload/bin/jdtls"
+            }
+          },
+          "config": "config_linux/",
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "jdtls.tar.gz",
+              "url": "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-1.63.0-202610191322.tar.gz"
+            },
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "lombok.jar",
+              "url": "https://projectlombok.org/downloads/lombok-1.18.48.jar"
+            }
+          ]
+        },
+        "win": {
+          "bin": {
+            "jdtls": {
+              "args": [
+                "-configuration",
+                "{cache}/jdtls/{instance}/configuration"
+              ],
+              "interpreter": "python3",
+              "path": "payload/bin/jdtls"
+            }
+          },
+          "config": "config_win/",
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "jdtls.tar.gz",
+              "url": "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-1.63.0-202610191322.tar.gz"
+            },
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "lombok.jar",
+              "url": "https://projectlombok.org/downloads/lombok-1.18.48.jar"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "jdtls": {
+          "args": [
+            "-configuration",
+            "{cache}/jdtls/{instance}/configuration"
+          ],
+          "interpreter": "python3",
+          "path": "payload/bin/jdtls"
+        }
+      },
+      "kind": "download",
+      "resources": {
+        "config": "payload/config",
+        "lombok": "payload/lombok.jar",
+        "plugins": "payload/plugins"
+      },
+      "version": "v1.63.0"
+    },
+    "jq": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "jq": {
+              "path": "payload/jq-macos-arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "jq-macos-arm64",
+              "url": "https://github.com/stedolan/jq/releases/download/jq-1.7/jq-macos-arm64"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "jq": {
+              "path": "payload/jq-macos-amd64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "jq-macos-amd64",
+              "url": "https://github.com/stedolan/jq/releases/download/jq-1.7/jq-macos-amd64"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "jq": {
+              "path": "payload/jq-linux-arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "jq-linux-arm64",
+              "url": "https://github.com/stedolan/jq/releases/download/jq-1.7/jq-linux-arm64"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "jq": {
+              "path": "payload/jq-linux-amd64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "jq-linux-amd64",
+              "url": "https://github.com/stedolan/jq/releases/download/jq-1.7/jq-linux-amd64"
+            }
+          ]
+        },
+        "linux_x86": {
+          "bin": {
+            "jq": {
+              "path": "payload/jq-linux-i386"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "jq-linux-i386",
+              "url": "https://github.com/stedolan/jq/releases/download/jq-1.7/jq-linux-i386"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "jq": {
+          "path": "payload/jq-macos-amd64"
+        }
+      },
+      "kind": "download",
+      "version": "jq-1.7"
+    },
+    "json-lsp": {
+      "bin": {
+        "vscode-json-language-server": {
+          "path": "node_modules/.bin/vscode-json-language-server"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "vscode-langservers-extracted",
+      "version": "4.10.0"
+    },
+    "kdlfmt": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "kdlfmt": {
+              "path": "payload/kdlfmt-aarch64-apple-darwin/kdlfmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "kdlfmt-aarch64-apple-darwin.tar.xz",
+              "url": "https://github.com/hougesen/kdlfmt/releases/download/v0.1.7/kdlfmt-aarch64-apple-darwin.tar.xz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "kdlfmt": {
+              "path": "payload/kdlfmt-x86_64-apple-darwin/kdlfmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "kdlfmt-x86_64-apple-darwin.tar.xz",
+              "url": "https://github.com/hougesen/kdlfmt/releases/download/v0.1.7/kdlfmt-x86_64-apple-darwin.tar.xz"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "kdlfmt": {
+              "path": "payload/kdlfmt-aarch64-unknown-linux-gnu/kdlfmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "kdlfmt-aarch64-unknown-linux-gnu.tar.xz",
+              "url": "https://github.com/hougesen/kdlfmt/releases/download/v0.1.7/kdlfmt-aarch64-unknown-linux-gnu.tar.xz"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "kdlfmt": {
+              "path": "payload/kdlfmt-x86_64-unknown-linux-gnu/kdlfmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "kdlfmt-x86_64-unknown-linux-gnu.tar.xz",
+              "url": "https://github.com/hougesen/kdlfmt/releases/download/v0.1.7/kdlfmt-x86_64-unknown-linux-gnu.tar.xz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "kdlfmt": {
+          "path": "payload/kdlfmt-aarch64-apple-darwin/kdlfmt"
+        }
+      },
+      "kind": "download",
+      "version": "v0.1.7"
+    },
+    "lua-language-server": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "lua-language-server": {
+              "args": [
+                "--logpath={state}/lua-language-server/log",
+                "--metapath={cache}/lua-language-server/meta"
+              ],
+              "path": "payload/libexec/bin/lua-language-server"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "libexec/",
+              "name": "lua-language-server-3.19.2-darwin-arm64.tar.gz",
+              "url": "https://github.com/LuaLS/lua-language-server/releases/download/3.19.2/lua-language-server-3.19.2-darwin-arm64.tar.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "lua-language-server": {
+              "args": [
+                "--logpath={state}/lua-language-server/log",
+                "--metapath={cache}/lua-language-server/meta"
+              ],
+              "path": "payload/libexec/bin/lua-language-server"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "libexec/",
+              "name": "lua-language-server-3.19.2-darwin-x64.tar.gz",
+              "url": "https://github.com/LuaLS/lua-language-server/releases/download/3.19.2/lua-language-server-3.19.2-darwin-x64.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "lua-language-server": {
+              "args": [
+                "--logpath={state}/lua-language-server/log",
+                "--metapath={cache}/lua-language-server/meta"
+              ],
+              "path": "payload/libexec/bin/lua-language-server"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "libexec/",
+              "name": "lua-language-server-3.19.2-linux-arm64.tar.gz",
+              "url": "https://github.com/LuaLS/lua-language-server/releases/download/3.19.2/lua-language-server-3.19.2-linux-arm64.tar.gz"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "lua-language-server": {
+              "args": [
+                "--logpath={state}/lua-language-server/log",
+                "--metapath={cache}/lua-language-server/meta"
+              ],
+              "path": "payload/libexec/bin/lua-language-server"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "libexec/",
+              "name": "lua-language-server-3.19.2-linux-x64.tar.gz",
+              "url": "https://github.com/LuaLS/lua-language-server/releases/download/3.19.2/lua-language-server-3.19.2-linux-x64.tar.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "lua-language-server": {
+          "args": [
+            "--logpath={state}/lua-language-server/log",
+            "--metapath={cache}/lua-language-server/meta"
+          ],
+          "path": "payload/libexec/bin/lua-language-server"
+        }
+      },
+      "kind": "download",
+      "version": "3.19.2"
+    },
+    "marksman": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "marksman": {
+              "path": "payload/marksman-macos"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "marksman-macos",
+              "url": "https://github.com/artempyanykh/marksman/releases/download/2026-02-08/marksman-macos"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "marksman": {
+              "path": "payload/marksman-macos"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "marksman-macos",
+              "url": "https://github.com/artempyanykh/marksman/releases/download/2026-02-08/marksman-macos"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "marksman": {
+              "path": "payload/marksman-linux-arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "marksman-linux-arm64",
+              "url": "https://github.com/artempyanykh/marksman/releases/download/2026-02-08/marksman-linux-arm64"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "marksman": {
+              "path": "payload/marksman-linux-x64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "marksman-linux-x64",
+              "url": "https://github.com/artempyanykh/marksman/releases/download/2026-02-08/marksman-linux-x64"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "marksman": {
+          "path": "payload/marksman-macos"
+        }
+      },
+      "kind": "download",
+      "version": "2026-02-08"
+    },
+    "matlab-language-server": {
+      "bin": {
+        "matlab-language-server": {
+          "interpreter": "node",
+          "path": "payload/out/index.js"
+        }
+      },
+      "kind": "npm-build",
+      "repository": "https://github.com/mathworks/MATLAB-language-server",
+      "revision": "3997ef66d0ca3b9e4099e33e1014cfa03029898f",
+      "version": "3997ef66d0ca3b9e4099e33e1014cfa03029898f"
+    },
+    "miss_hit": {
+      "bin": {
+        "mh_lint": {
+          "path": "venv/bin/mh_lint"
+        },
+        "mh_style": {
+          "path": "venv/bin/mh_style"
+        }
+      },
+      "kind": "pypi",
+      "package": "miss-hit",
+      "resources": {
+        "python": "venv/bin/python"
+      },
+      "version": "0.9.44"
+    },
+    "mmdc": {
+      "bin": {
+        "mmdc": {
+          "env": {
+            "PUPPETEER_CACHE_DIR": "{root}/browser"
+          },
+          "path": "node_modules/.bin/mmdc"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "@mermaid-js/mermaid-cli",
+      "resources": {
+        "browser": "browser"
+      },
+      "version": "12.0.0"
+    },
+    "nil": {
+      "bin": {
+        "nil": {
+          "path": "payload/bin/nil"
+        }
+      },
+      "kind": "cargo",
+      "package": "nil",
+      "repository": "https://github.com/oxalica/nil",
+      "version": "2025-06-13"
+    },
+    "prettier": {
+      "bin": {
+        "prettier": {
+          "path": "node_modules/.bin/prettier"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "prettier",
+      "version": "3.9.10"
+    },
+    "prettierd": {
+      "bin": {
+        "prettierd": {
+          "path": "node_modules/.bin/prettierd"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "@fsouza/prettierd",
+      "version": "0.29.0"
+    },
+    "ruff": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-aarch64-apple-darwin/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-aarch64-apple-darwin.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-aarch64-apple-darwin.tar.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-x86_64-apple-darwin/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-x86_64-apple-darwin.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-x86_64-apple-darwin.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-aarch64-unknown-linux-gnu/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-aarch64-unknown-linux-gnu.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64_musl": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-aarch64-unknown-linux-musl/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-aarch64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-aarch64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        },
+        "linux_armv7_gnu": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-armv7-unknown-linux-gnueabihf/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-armv7-unknown-linux-gnueabihf.tar.gz"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-x86_64-unknown-linux-musl/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-x86_64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        },
+        "linux_x64_musl": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-x86_64-unknown-linux-musl/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-x86_64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-x86_64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        },
+        "linux_x86": {
+          "bin": {
+            "ruff": {
+              "path": "payload/ruff-i686-unknown-linux-gnu/ruff"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "ruff-i686-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/astral-sh/ruff/releases/download/0.17.3/ruff-i686-unknown-linux-gnu.tar.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "ruff": {
+          "path": "payload/ruff-x86_64-apple-darwin/ruff"
+        }
+      },
+      "kind": "download",
+      "version": "0.17.3"
+    },
+    "rust-analyzer": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "rust-analyzer": {
+              "path": "payload/rust-analyzer-aarch64-apple-darwin"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "rust-analyzer-aarch64-apple-darwin.gz",
+              "url": "https://github.com/rust-lang/rust-analyzer/releases/download/2026-11-02/rust-analyzer-aarch64-apple-darwin.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "rust-analyzer": {
+              "path": "payload/rust-analyzer-x86_64-apple-darwin"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "rust-analyzer-x86_64-apple-darwin.gz",
+              "url": "https://github.com/rust-lang/rust-analyzer/releases/download/2026-11-02/rust-analyzer-x86_64-apple-darwin.gz"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "rust-analyzer": {
+              "path": "payload/rust-analyzer-aarch64-unknown-linux-gnu"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "rust-analyzer-aarch64-unknown-linux-gnu.gz",
+              "url": "https://github.com/rust-lang/rust-analyzer/releases/download/2026-11-02/rust-analyzer-aarch64-unknown-linux-gnu.gz"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "rust-analyzer": {
+              "path": "payload/rust-analyzer-x86_64-unknown-linux-gnu"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "rust-analyzer-x86_64-unknown-linux-gnu.gz",
+              "url": "https://github.com/rust-lang/rust-analyzer/releases/download/2026-11-02/rust-analyzer-x86_64-unknown-linux-gnu.gz"
+            }
+          ]
+        },
+        "linux_x64_musl": {
+          "bin": {
+            "rust-analyzer": {
+              "path": "payload/rust-analyzer-x86_64-unknown-linux-musl"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "rust-analyzer-x86_64-unknown-linux-musl.gz",
+              "url": "https://github.com/rust-lang/rust-analyzer/releases/download/2026-11-02/rust-analyzer-x86_64-unknown-linux-musl.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "rust-analyzer": {
+          "path": "payload/rust-analyzer-x86_64-unknown-linux-gnu"
+        }
+      },
+      "kind": "download",
+      "version": "2026-11-02"
+    },
+    "shfmt": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "shfmt": {
+              "path": "payload/shfmt_v3.14.1_darwin_arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "shfmt_v3.14.1_darwin_arm64",
+              "url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_darwin_arm64"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "shfmt": {
+              "path": "payload/shfmt_v3.14.1_darwin_amd64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "shfmt_v3.14.1_darwin_amd64",
+              "url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_darwin_amd64"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "shfmt": {
+              "path": "payload/shfmt_v3.14.1_linux_arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "shfmt_v3.14.1_linux_arm64",
+              "url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_arm64"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "shfmt": {
+              "path": "payload/shfmt_v3.14.1_linux_amd64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "shfmt_v3.14.1_linux_amd64",
+              "url": "https://github.com/mvdan/sh/releases/download/v3.14.1/shfmt_v3.14.1_linux_amd64"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "shfmt": {
+          "path": "payload/shfmt_v3.14.1_darwin_arm64"
+        }
+      },
+      "kind": "download",
+      "version": "v3.14.1"
+    },
+    "stylua": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "stylua": {
+              "path": "payload/stylua"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "stylua-macos-aarch64.zip",
+              "url": "https://github.com/johnnymorganz/stylua/releases/download/v2.6.0/stylua-macos-aarch64.zip"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "stylua": {
+              "path": "payload/stylua"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "stylua-macos-x86_64.zip",
+              "url": "https://github.com/johnnymorganz/stylua/releases/download/v2.6.0/stylua-macos-x86_64.zip"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "stylua": {
+              "path": "payload/stylua"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "stylua-linux-aarch64.zip",
+              "url": "https://github.com/johnnymorganz/stylua/releases/download/v2.6.0/stylua-linux-aarch64.zip"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "stylua": {
+              "path": "payload/stylua"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "stylua-linux-x86_64-musl.zip",
+              "url": "https://github.com/johnnymorganz/stylua/releases/download/v2.6.0/stylua-linux-x86_64-musl.zip"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "stylua": {
+              "path": "payload/stylua"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "stylua-linux-x86_64.zip",
+              "url": "https://github.com/johnnymorganz/stylua/releases/download/v2.6.0/stylua-linux-x86_64.zip"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "stylua": {
+          "path": "payload/stylua"
+        }
+      },
+      "kind": "download",
+      "version": "v2.6.0"
+    },
+    "superhtml": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "superhtml": {
+              "path": "payload/superhtml"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "aarch64-macos.zip",
+              "url": "https://github.com/kristoff-it/superhtml/releases/download/v0.7.1/aarch64-macos.zip"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "superhtml": {
+              "path": "payload/superhtml"
+            }
+          },
+          "files": [
+            {
+              "archive": "zip",
+              "destination": "",
+              "name": "x86_64-macos.zip",
+              "url": "https://github.com/kristoff-it/superhtml/releases/download/v0.7.1/x86_64-macos.zip"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "superhtml": {
+              "path": "payload/superhtml"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "aarch64-linux.tar.xz",
+              "url": "https://github.com/kristoff-it/superhtml/releases/download/v0.7.1/aarch64-linux.tar.xz"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "superhtml": {
+              "path": "payload/superhtml"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "x86_64-linux-musl.tar.xz",
+              "url": "https://github.com/kristoff-it/superhtml/releases/download/v0.7.1/x86_64-linux-musl.tar.xz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "superhtml": {
+          "path": "payload/superhtml"
+        }
+      },
+      "kind": "download",
+      "version": "v0.7.1"
+    },
+    "taplo": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "taplo": {
+              "path": "payload/taplo-darwin-aarch64"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "taplo-darwin-aarch64.gz",
+              "url": "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-darwin-aarch64.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "taplo": {
+              "path": "payload/taplo-darwin-x86_64"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "taplo-darwin-x86_64.gz",
+              "url": "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-darwin-x86_64.gz"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "taplo": {
+              "path": "payload/taplo-linux-aarch64"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "taplo-linux-aarch64.gz",
+              "url": "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-aarch64.gz"
+            }
+          ]
+        },
+        "linux_armv7_gnu": {
+          "bin": {
+            "taplo": {
+              "path": "payload/taplo-linux-armv7"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "taplo-linux-armv7.gz",
+              "url": "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-armv7.gz"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "taplo": {
+              "path": "payload/taplo-linux-x86_64"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "taplo-linux-x86_64.gz",
+              "url": "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86_64.gz"
+            }
+          ]
+        },
+        "linux_x86": {
+          "bin": {
+            "taplo": {
+              "path": "payload/taplo-linux-x86"
+            }
+          },
+          "files": [
+            {
+              "archive": "gzip",
+              "destination": "",
+              "name": "taplo-linux-x86.gz",
+              "url": "https://github.com/tamasfe/taplo/releases/download/0.10.0/taplo-linux-x86.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "taplo": {
+          "path": "payload/taplo-darwin-aarch64"
+        }
+      },
+      "kind": "download",
+      "version": "0.10.0"
+    },
+    "tex-fmt": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "tex-fmt": {
+              "path": "payload/tex-fmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "tex-fmt-aarch64-macos.tar.gz",
+              "url": "https://github.com/WGUNDERWOOD/tex-fmt/releases/download/v0.5.7/tex-fmt-aarch64-macos.tar.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "tex-fmt": {
+              "path": "payload/tex-fmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "tex-fmt-x86_64-macos.tar.gz",
+              "url": "https://github.com/WGUNDERWOOD/tex-fmt/releases/download/v0.5.7/tex-fmt-x86_64-macos.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "tex-fmt": {
+              "path": "payload/tex-fmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "tex-fmt-aarch64-linux.tar.gz",
+              "url": "https://github.com/WGUNDERWOOD/tex-fmt/releases/download/v0.5.7/tex-fmt-aarch64-linux.tar.gz"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "tex-fmt": {
+              "path": "payload/tex-fmt"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "tex-fmt-x86_64-linux.tar.gz",
+              "url": "https://github.com/WGUNDERWOOD/tex-fmt/releases/download/v0.5.7/tex-fmt-x86_64-linux.tar.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "tex-fmt": {
+          "path": "payload/tex-fmt"
+        }
+      },
+      "kind": "download",
+      "version": "v0.5.7"
+    },
+    "tinymist": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "tinymist": {
+              "path": "payload/tinymist-darwin-arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "tinymist-darwin-arm64",
+              "url": "https://github.com/Myriad-Dreamin/tinymist/releases/download/v0.15.10/tinymist-darwin-arm64"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "tinymist": {
+              "path": "payload/tinymist-darwin-x64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "tinymist-darwin-x64",
+              "url": "https://github.com/Myriad-Dreamin/tinymist/releases/download/v0.15.10/tinymist-darwin-x64"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "tinymist": {
+              "path": "payload/tinymist-linux-arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "tinymist-linux-arm64",
+              "url": "https://github.com/Myriad-Dreamin/tinymist/releases/download/v0.15.10/tinymist-linux-arm64"
+            }
+          ]
+        },
+        "linux_arm64_musl": {
+          "bin": {
+            "tinymist": {
+              "path": "payload/tinymist-alpine-arm64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "tinymist-alpine-arm64",
+              "url": "https://github.com/Myriad-Dreamin/tinymist/releases/download/v0.15.10/tinymist-alpine-arm64"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "tinymist": {
+              "path": "payload/tinymist-linux-x64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "tinymist-linux-x64",
+              "url": "https://github.com/Myriad-Dreamin/tinymist/releases/download/v0.15.10/tinymist-linux-x64"
+            }
+          ]
+        },
+        "linux_x64_musl": {
+          "bin": {
+            "tinymist": {
+              "path": "payload/tinymist-alpine-x64"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "tinymist-alpine-x64",
+              "url": "https://github.com/Myriad-Dreamin/tinymist/releases/download/v0.15.10/tinymist-alpine-x64"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "tinymist": {
+          "path": "payload/tinymist-linux-x64"
+        }
+      },
+      "kind": "download",
+      "version": "v0.15.10"
+    },
+    "typos-lsp": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-aarch64-apple-darwin.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-aarch64-apple-darwin.tar.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-x86_64-apple-darwin.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-x86_64-apple-darwin.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-aarch64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-aarch64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64_gnu": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-aarch64-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-aarch64-unknown-linux-gnu.tar.gz"
+            }
+          ]
+        },
+        "linux_arm_gnu": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-arm-unknown-linux-gnueabihf.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-arm-unknown-linux-gnueabihf.tar.gz"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-x86_64-unknown-linux-musl.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-x86_64-unknown-linux-musl.tar.gz"
+            }
+          ]
+        },
+        "linux_x64_gnu": {
+          "bin": {
+            "typos-lsp": {
+              "path": "payload/typos-lsp"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "typos-lsp-v0.1.57-x86_64-unknown-linux-gnu.tar.gz",
+              "url": "https://github.com/tekumara/typos-vscode/releases/download/v0.1.57/typos-lsp-v0.1.57-x86_64-unknown-linux-gnu.tar.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "typos-lsp": {
+          "path": "payload/typos-lsp"
+        }
+      },
+      "kind": "download",
+      "version": "v0.1.57"
+    },
+    "typstyle": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "typstyle": {
+              "path": "payload/typstyle-aarch64-apple-darwin"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "typstyle-aarch64-apple-darwin",
+              "url": "https://github.com/Enter-tainer/typstyle/releases/download/v0.15.2/typstyle-aarch64-apple-darwin"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "typstyle": {
+              "path": "payload/typstyle-x86_64-apple-darwin"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "typstyle-x86_64-apple-darwin",
+              "url": "https://github.com/Enter-tainer/typstyle/releases/download/v0.15.2/typstyle-x86_64-apple-darwin"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "typstyle": {
+              "path": "payload/typstyle-aarch64-unknown-linux-gnu"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "typstyle-aarch64-unknown-linux-gnu",
+              "url": "https://github.com/Enter-tainer/typstyle/releases/download/v0.15.2/typstyle-aarch64-unknown-linux-gnu"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "typstyle": {
+              "path": "payload/typstyle-x86_64-unknown-linux-gnu"
+            }
+          },
+          "files": [
+            {
+              "archive": "file",
+              "destination": "",
+              "name": "typstyle-x86_64-unknown-linux-gnu",
+              "url": "https://github.com/Enter-tainer/typstyle/releases/download/v0.15.2/typstyle-x86_64-unknown-linux-gnu"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "typstyle": {
+          "path": "payload/typstyle-aarch64-apple-darwin"
+        }
+      },
+      "kind": "download",
+      "version": "v0.15.2"
+    },
+    "verible": {
+      "assets": {
+        "darwin_arm64": {
+          "bin": {
+            "verible-verilog-diff": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-diff"
+            },
+            "verible-verilog-format": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-format"
+            },
+            "verible-verilog-kythe-extractor": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-kythe-extractor"
+            },
+            "verible-verilog-lint": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-lint"
+            },
+            "verible-verilog-ls": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-ls"
+            },
+            "verible-verilog-obfuscate": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-obfuscate"
+            },
+            "verible-verilog-preprocessor": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-preprocessor"
+            },
+            "verible-verilog-project": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-project"
+            },
+            "verible-verilog-syntax": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-syntax"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "verible-v0.0-4298-g085eef05-macOS.tar.gz",
+              "url": "https://github.com/chipsalliance/verible/releases/download/v0.0-4298-g085eef05/verible-v0.0-4298-g085eef05-macOS.tar.gz"
+            }
+          ]
+        },
+        "darwin_x64": {
+          "bin": {
+            "verible-verilog-diff": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-diff"
+            },
+            "verible-verilog-format": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-format"
+            },
+            "verible-verilog-kythe-extractor": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-kythe-extractor"
+            },
+            "verible-verilog-lint": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-lint"
+            },
+            "verible-verilog-ls": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-ls"
+            },
+            "verible-verilog-obfuscate": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-obfuscate"
+            },
+            "verible-verilog-preprocessor": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-preprocessor"
+            },
+            "verible-verilog-project": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-project"
+            },
+            "verible-verilog-syntax": {
+              "path": "payload/verible-v0.0-4298-g085eef05-macOS/bin/verible-verilog-syntax"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "verible-v0.0-4298-g085eef05-macOS.tar.gz",
+              "url": "https://github.com/chipsalliance/verible/releases/download/v0.0-4298-g085eef05/verible-v0.0-4298-g085eef05-macOS.tar.gz"
+            }
+          ]
+        },
+        "linux_arm64": {
+          "bin": {
+            "verible-verilog-diff": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-diff"
+            },
+            "verible-verilog-format": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-format"
+            },
+            "verible-verilog-kythe-extractor": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-kythe-extractor"
+            },
+            "verible-verilog-lint": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-lint"
+            },
+            "verible-verilog-ls": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-ls"
+            },
+            "verible-verilog-obfuscate": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-obfuscate"
+            },
+            "verible-verilog-preprocessor": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-preprocessor"
+            },
+            "verible-verilog-project": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-project"
+            },
+            "verible-verilog-syntax": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-syntax"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "verible-v0.0-4298-g085eef05-linux-static-arm64.tar.gz",
+              "url": "https://github.com/chipsalliance/verible/releases/download/v0.0-4298-g085eef05/verible-v0.0-4298-g085eef05-linux-static-arm64.tar.gz"
+            }
+          ]
+        },
+        "linux_x64": {
+          "bin": {
+            "verible-verilog-diff": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-diff"
+            },
+            "verible-verilog-format": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-format"
+            },
+            "verible-verilog-kythe-extractor": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-kythe-extractor"
+            },
+            "verible-verilog-lint": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-lint"
+            },
+            "verible-verilog-ls": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-ls"
+            },
+            "verible-verilog-obfuscate": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-obfuscate"
+            },
+            "verible-verilog-preprocessor": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-preprocessor"
+            },
+            "verible-verilog-project": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-project"
+            },
+            "verible-verilog-syntax": {
+              "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-syntax"
+            }
+          },
+          "files": [
+            {
+              "archive": "tar",
+              "destination": "",
+              "name": "verible-v0.0-4298-g085eef05-linux-static-x86_64.tar.gz",
+              "url": "https://github.com/chipsalliance/verible/releases/download/v0.0-4298-g085eef05/verible-v0.0-4298-g085eef05-linux-static-x86_64.tar.gz"
+            }
+          ]
+        }
+      },
+      "bin": {
+        "verible-verilog-diff": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-diff"
+        },
+        "verible-verilog-format": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-format"
+        },
+        "verible-verilog-kythe-extractor": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-kythe-extractor"
+        },
+        "verible-verilog-lint": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-lint"
+        },
+        "verible-verilog-ls": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-ls"
+        },
+        "verible-verilog-obfuscate": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-obfuscate"
+        },
+        "verible-verilog-preprocessor": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-preprocessor"
+        },
+        "verible-verilog-project": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-project"
+        },
+        "verible-verilog-syntax": {
+          "path": "payload/verible-v0.0-4298-g085eef05/bin/verible-verilog-syntax"
+        }
+      },
+      "kind": "download",
+      "version": "v0.0-4298-g085eef05"
+    },
+    "vtsls": {
+      "bin": {
+        "vtsls": {
+          "path": "node_modules/.bin/vtsls"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "@vtsls/language-server",
+      "version": "0.3.0"
+    },
+    "vue-language-server": {
+      "bin": {
+        "vue-language-server": {
+          "path": "node_modules/.bin/vue-language-server"
+        }
+      },
+      "extras": [
+        "typescript@6.0.3",
+        "@vue/typescript-plugin@3.3.14"
+      ],
+      "kind": "npm",
+      "package": "@vue/language-server",
+      "resources": {
+        "server": "node_modules/@vue/language-server"
+      },
+      "version": "3.3.14"
+    },
+    "yaml-language-server": {
+      "bin": {
+        "yaml-language-server": {
+          "path": "node_modules/.bin/yaml-language-server"
+        }
+      },
+      "extras": [],
+      "kind": "npm",
+      "package": "yaml-language-server",
+      "version": "2.0.0"
+    }
+  },
+  "schema": 1,
+  "upstream": {
+    "repository": "https://github.com/mason-org/mason-registry",
+    "sha256": "e96a1c2e1db10266c2f5d6048bc3adf39cf58c4636f3bb60e05319ee9a13bf7b",
+    "version": "2026-11-04-mean-kite"
+  }
+}

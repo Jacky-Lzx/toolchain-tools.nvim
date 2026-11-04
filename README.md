@@ -1,6 +1,6 @@
 # toolchain-tools.nvim
 
-One installation queue for independently built Tree-sitter parsers, Mason packages, and checks for
+One installation queue for independent tools and Tree-sitter parsers, optional Mason packages, and checks for
 tools supplied by Nix or your system package manager.
 
 Inspect requirements, install explicitly, and follow every task in the same
@@ -8,7 +8,8 @@ window. Existing tools take priority; installation failures remain visible and
 can be retried. Nothing is downloaded during setup, planning, or health checks.
 
 Requires Neovim 0.11+. The independent `parser` backend needs Git, the Tree-sitter
-CLI, and a C compiler on macOS/Linux. The `mason` backend needs
+CLI, and a C compiler on macOS/Linux. Independent tools use host download/archive
+utilities and the package managers needed by their recipes. The optional `mason` backend needs
 [Mason v2](https://github.com/mason-org/mason.nvim). An optional legacy `treesitter`
 adapter still supports [nvim-treesitter main](https://github.com/nvim-treesitter/nvim-treesitter)
 (not its old `master` API). This plugin manages
@@ -24,16 +25,13 @@ For a local checkout with lazy.nvim:
   dir = vim.fn.expand("~/Documents/Github/nvim_plugins/toolchain-tools.nvim"),
   main = "toolchain",
   lazy = false, -- activate committed parser/query versions before opening files
-  dependencies = {
-    { "mason-org/mason.nvim", opts = { PATH = "append" } },
-  },
   opts = {
     concurrency = 2,
     requirements = {
       { provider = "parser", name = "lua" },
       { provider = "parser", name = "markdown" },
-      { provider = "mason", name = "lua-language-server", executable = "lua-language-server" },
-      { provider = "mason", name = "stylua", executable = "stylua" },
+      { provider = "tool", name = "lua-language-server", executable = "lua-language-server" },
+      { provider = "tool", name = "stylua", executable = "stylua" },
       { provider = "system", name = "git" },
       { provider = "system", name = "html_beautify", optional = true },
     },
@@ -44,8 +42,7 @@ For a local checkout with lazy.nvim:
 If these dependencies already have plugin specs, keep their existing setup there.
 Mason must have completed `setup()` before its backend runs. nvim-treesitter's
 default installation directory works without setup; configure a custom directory
-with its own `setup()`. This plugin never changes either backend's settings or
-PATH. The independent `parser` provider does not require nvim-treesitter. Backend
+with its own `setup()`. This plugin never changes either compatibility backend's settings or PATH. The independent `parser` provider does not require nvim-treesitter. Backend
 build hooks or other plugins may still perform their own installs;
 only work submitted through toolchain-tools belongs to this queue.
 
@@ -55,13 +52,35 @@ them. `:Toolchain` opens the live task window.
 ## Independent tool backend
 
 The `tool` provider installs into its own versioned store without Mason APIs.
-Tool recipes can be supplied through `tools.sources`. Setup only appends existing
+The bundled registry covers the 37 packages declared by the current language
+profiles. Recipes can also be supplied through `tools.sources`. Supported installers
+are pinned release downloads (tar/zip/gzip/raw), isolated npm prefixes, Python
+virtual environments, Cargo Git tags, and pinned npm source builds. The initial
+platforms are macOS and Linux on x86-64/ARM64, subject to upstream asset availability.
+For example, the current clangd release requires a system package on Linux ARM64.
+
+New npm/Python installations record their resolved dependency versions. Repairs
+reuse intact lockfiles from the same recipe; initial resolutions are not universal
+transitive dependency locks. Download receipts record SHA-256; recipes may also
+provide an expected `sha256` for verification.
+
+Recipes can be supplied through `tools.sources`. Setup only appends existing
 managed binary directories to PATH (`tools.path = "skip"` disables this); it
 never downloads or creates directories. System/Nix executables retain priority.
+
+`:ToolchainInstall` also updates an installation to the currently pinned recipe.
+To change versions, update the recipe first; it never silently selects latest.
+`:ToolchainUninstall tool:<package>` removes its activation pointer and PATH entry,
+retaining version files for already running processes. Restart clients after
+installing a new tool version. External package managers and their global installs
+are never modified. The Mermaid recipe keeps its browser cache within its version.
+Python uses an available versioned Python 3 executable and optionally uv for pip operations.
 Installations build at their final version path so Python virtual environments
 remain valid, and publish an atomic current-version pointer only after validation.
 Failed installations retain the previous version. Old versions are kept for running
-processes. Explicit installs verify artifacts and repair changed or missing files.
+processes. Explicit installs verify artifacts and repair changed or missing files. Python
+bytecode caches are excluded; LuaLS logs/generated metadata and JDTLS OSGi
+configuration caches live outside their version directories.
 
 `require("toolchain.tools").executable(package, command)` resolves a managed binary;
 `.path(package, resource)` resolves declared resources, and `.info(package)` reports
@@ -152,6 +171,7 @@ The `treesitter` provider remains available as an explicit compatibility adapter
 | `:Toolchain` | Show tasks from this Neovim session |
 | `:ToolchainPlan` | Show configured requirements and local executable availability |
 | `:ToolchainInstall [provider:name ...]` | Install all configured requirements or selected IDs |
+| `:ToolchainUninstall tool:name` | Deactivate an independent tool; retain its version files |
 | `:ToolchainRetry [provider:name ...]` | Retry failed, unavailable, or cancelled tasks using their original declaration |
 | `:ToolchainCancel provider:name` | Cancel a task that is still queued |
 | `:ToolchainLog` | Open a read-only snapshot of the persistent JSON-lines log |
@@ -178,13 +198,13 @@ A requirement has `provider` and `name`, with optional fields:
 
 | Field | Meaning |
 | --- | --- |
-| `executable` | Command/path to check before a Mason install, or for a system requirement |
+| `executable` | Command/path to check before a managed-tool install, or for a system requirement |
 | `resolve` | Function returning an existing executable path, or `nil`/`false`; falls back to `executable` |
-| `post_install` | Synchronous Mason-only hook receiving the package object |
-| `post_install_async` | Mason-only hook receiving `(package, done, log)`; calls `done()` on success or `done(error)` on failure |
+| `post_install` | Synchronous managed-tool hook; Mason compatibility receives its package object |
+| `post_install_async` | Managed-tool hook receiving `(package, done, log)`; calls `done()` on success or `done(error)` on failure |
 | `optional` | System-only boolean, default `false`; missing optional executables finish as `unavailable` |
 
-System requirements default their executable to `name`; Mason requirements do
+System requirements default their executable to `name`; managed requirements do
 not, since registry package names and executable names can differ. Resolver
 errors fail the individual task. Keep resolvers read-only: planning and health
 checks also call them. Optional declarations change only how an absent system
@@ -192,7 +212,7 @@ tool is reported: resolver errors and malformed declarations still fail. Plans
 show `unavailable` and health reports it as information. Explicit retries recheck
 these tools, so they can become `skipped` after you install them externally.
 System requirements never install packages themselves. This option does not
-suppress Mason/parser download, compilation, or post-install failures.
+suppress tool/Mason/parser download, compilation, or post-install failures.
 
 Mason binaries already on PATH are recognized as Mason-managed, including
 symlinks under its configured install root. Their package checks and hooks still
@@ -252,8 +272,8 @@ require("toolchain").setup({
     end
     for _, tool in ipairs(language.tools) do
       requirements[#requirements + 1] = {
-        provider = tool.mason and "mason" or "system",
-        name = tool.mason or tool.executable,
+        provider = tool.package and "tool" or "system",
+        name = tool.package or tool.executable,
         executable = tool.executable,
         resolve = tool.resolve,
         post_install = tool.post_install,
@@ -290,11 +310,11 @@ require("toolchain").setup({
 local tc = require("toolchain")
 local plan = tc.plan() -- or tc.plan(requirements)
 local ids = tc.install() -- or tc.install(requirements)
-tc.install_ids({ "mason:stylua" })
+tc.install_ids({ "tool:stylua" })
 local tasks = tc.status() -- independent snapshots, including logs and attempt numbers
 local finished, final_tasks = tc.wait(300000)
-tc.retry() -- failed, unavailable, cancelled; or tc.retry({ "mason:stylua" })
-local cancelled, reason = tc.cancel("mason:stylua")
+tc.retry() -- failed, unavailable, cancelled; or tc.retry({ "tool:stylua" })
+local cancelled, reason = tc.cancel("tool:stylua")
 tc.open()
 ```
 
@@ -358,3 +378,14 @@ Python 3 on a Unix host. Integration additionally needs actual upstream
 checkouts, `tree-sitter`, a C compiler, and the grammar generator's requirements.
 It installs a local Mason package, compiles and loads a local parser, and checks
 that repeated installations skip both. All installation data is temporary.
+
+For opt-in acceptance against an already installed tool store (including native
+DAP launches and Mermaid browser rendering), run:
+
+```sh
+python3 tests/installed_tools.py --store /path/to/nvim/toolchain-tools/tools \
+  --java-home /path/to/jdk21-or-newer
+```
+
+This test needs the 16 migrated tools, a C compiler and their host runtimes. It
+uses temporary source/workspace files and does not install or update packages.

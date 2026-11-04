@@ -50,6 +50,13 @@ t.test("modified artifacts are repaired in a fresh version", function()
   assert(vim.fn.isdirectory(previous) == 1)
 end)
 
+t.test("normal Python bytecode caches do not invalidate source artifacts", function()
+  local current = tools.path("fixture")
+  vim.fn.mkdir(current .. "/libexec/__pycache__", "p")
+  vim.fn.writefile({ "runtime cache" }, current .. "/libexec/__pycache__/fixture.pyc")
+  assert(tools.info("fixture").intact)
+end)
+
 t.test("failed upgrade retains the prior version and removes incomplete directories", function()
   local previous = tools.info("fixture").current
   local bad = vim.deepcopy(recipe)
@@ -102,6 +109,13 @@ t.test("system tools retain priority; managed binaries are not treated as extern
   assert(system.external({ provider = "tool", name = "fixture", executable = "fixture-tool" }) == nil)
   assert(system.external({ provider = "tool", name = "fixture", executable = "sh" }))
   assert(not package.loaded.mason and not package.loaded["mason-registry"])
+end)
+
+t.test("uninstall deactivates the package and retains files for running processes", function()
+  local old = tools.path("fixture")
+  vim.cmd("ToolchainUninstall tool:fixture")
+  assert(tools.path("fixture") == nil and tools.executable("fixture", "fixture-tool") == nil)
+  assert(vim.fn.isdirectory(old) == 1 and not vim.env.PATH:find(old, 1, true))
 end)
 
 t.done()

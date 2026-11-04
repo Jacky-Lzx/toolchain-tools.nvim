@@ -58,9 +58,12 @@ function M.definition(package_name)
       registry[key] = vim.deepcopy(entry)
     end
   end
-  local entry = assert(registry[package_name], "Unknown independent tool: " .. package_name)
+  local entry = vim.deepcopy(assert(registry[package_name], "Unknown independent tool: " .. package_name))
   assert(type(entry) == "table" and type(entry.kind) == "string", "Invalid tool recipe: " .. package_name)
   assert(type(entry.version) == "string" and entry.version ~= "", "Tool version must be pinned")
+  if entry.kind == "download" then
+    entry.bin = require("toolchain.tool_installers").asset(entry).bin
+  end
   assert(type(entry.bin) == "table" and next(entry.bin), "Tool recipe needs bin entries")
   for command, target in pairs(entry.bin) do
     name(command)
@@ -161,6 +164,10 @@ local function fingerprint(entry)
   return util.hash("toolchain-tool-v1\n" .. os.sysname .. "\n" .. os.machine .. "\n" .. canonical(entry))
 end
 
+local function tracked(relative)
+  return not ("/" .. relative):find("/__pycache__/", 1, true) and not relative:match("%.py[co]$")
+end
+
 local function artifacts(root)
   local result = {}
   local function scan(directory, prefix)
@@ -168,15 +175,19 @@ local function artifacts(root)
       local relative = prefix .. file
       local path = directory .. "/" .. file
       if kind == "directory" then
-        scan(path, relative .. "/")
+        if file ~= "__pycache__" then
+          scan(path, relative .. "/")
+        end
       elseif kind == "link" then
         result[relative] = { link = assert(uv.fs_readlink(path)) }
-      elseif kind == "file" and relative ~= "receipt.json" then
+      elseif kind == "file" and relative ~= "receipt.json" and tracked(relative) then
         local stat = assert(uv.fs_stat(path))
         -- Large native libraries are hashed by a streaming host utility.
         local hash
         if stat.size > 8 * 1024 * 1024 then
-          local process = vim.system({ "shasum", "-a", "256", path }, { text = true }):wait()
+          local hash_command = vim.fn.executable("sha256sum") == 1 and { "sha256sum", path }
+            or { "shasum", "-a", "256", path }
+          local process = vim.system(hash_command, { text = true }):wait()
           assert(process.code == 0, process.stderr)
           hash = process.stdout:match("^([a-f0-9]+)")
         else
@@ -198,12 +209,30 @@ local function intact(root, desired)
     return false
   end
   local ok, actual = pcall(artifacts, root)
-  return ok and vim.deep_equal(actual, value.artifacts)
+  local expected = {}
+  for relative, value in pairs(value.artifacts or {}) do
+    if tracked(relative) then
+      expected[relative] = value
+    end
+  end
+  return ok and vim.deep_equal(actual, expected)
 end
 
 function M.info(package_name)
   local root, value = receipt(package_name)
   return { current = root, receipt = value, intact = intact(root, fingerprint(M.definition(package_name))) }
+end
+
+function M.remove(package_name)
+  local root = M.path(package_name)
+  assert(root, "Tool is not installed: " .. tostring(package_name))
+  assert(not inflight[package_name], "Tool is currently installing: " .. package_name)
+  local unlock = util.lock(settings().install_dir .. "/locks/" .. name(package_name) .. ".lock")
+  local ok, err = uv.fs_unlink(settings().install_dir .. "/current/" .. package_name .. ".json")
+  unlock()
+  assert(ok, err)
+  M.activate()
+  return root -- Retained for already running processes; no automatic garbage collection.
 end
 
 local function quote(value)
@@ -212,6 +241,21 @@ end
 
 local function wrappers(root, entry)
   vim.fn.mkdir(root .. "/bin", "p")
+  local function expand(value)
+    return value
+      :gsub("{root}", function()
+        return root
+      end)
+      :gsub("{instance}", function()
+        return vim.fs.basename(root)
+      end)
+      :gsub("{state}", function()
+        return vim.fn.stdpath("state") .. "/toolchain-tools/tools"
+      end)
+      :gsub("{cache}", function()
+        return vim.fn.stdpath("cache") .. "/toolchain-tools/tools"
+      end)
+  end
   for command, descriptor in pairs(entry.bin) do
     local path = root .. "/" .. descriptor.path
     assert(uv.fs_stat(path), "Missing tool entrypoint: " .. path)
@@ -233,7 +277,20 @@ local function wrappers(root, entry)
       args[#args + 1] = quote(path)
     end
     for _, argument in ipairs(descriptor.args or {}) do
-      args[#args + 1] = quote(argument)
+      args[#args + 1] = quote(expand(argument))
+    end
+    local environment = {}
+    for key, value in pairs(descriptor.env or {}) do
+      assert(key:match("^[A-Z_][A-Z0-9_]*$"), "Invalid wrapper environment key")
+      environment[#environment + 1] = key
+        .. "="
+        .. quote(value:gsub("{root}", function()
+          return root
+        end))
+    end
+    table.sort(environment)
+    if #environment > 0 then
+      table.insert(args, 1, "env " .. table.concat(environment, " "))
     end
     local wrapper = root .. "/bin/" .. command
     assert(path ~= wrapper, "Tool entrypoints must be outside the wrapper bin directory")
@@ -277,7 +334,9 @@ function M.install(spec, ctx)
     -- Build at the permanent version path: Python venv shebangs cannot be relocated.
     root = settings().install_dir .. "/versions/" .. spec.name .. "/" .. token
     vim.fn.mkdir(root, "p")
-    local metadata = require("toolchain.tool_installers").install(entry, root, ctx.log, previous)
+    local previous_receipt = previous and util.json(previous .. "/receipt.json")
+    local reusable = previous_receipt and previous_receipt.fingerprint == desired and previous or nil
+    local metadata = require("toolchain.tool_installers").install(entry, root, ctx.log, reusable)
     hook(spec, root, entry, ctx.log)
     wrappers(root, entry)
     util.write_json(root .. "/receipt.json", {

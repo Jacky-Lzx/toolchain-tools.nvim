@@ -36,6 +36,15 @@ function M.setup()
       toolchain.install_ids(args.fargs)
     end
   end, { nargs = "*", complete = completion, desc = "Install configured parsers and tools" })
+  command(
+    "ToolchainUninstall",
+    function(args)
+      local name = args.args:match("^tool:([%w_][%w_.+-]*)$")
+      assert(name, "Expected tool:<package>; only independent tools can be removed")
+      require("toolchain.tools").remove(name)
+    end,
+    { nargs = 1, complete = completion, desc = "Deactivate an independent tool, retaining files for running processes" }
+  )
   command("ToolchainRetry", function(args)
     require("toolchain").retry(#args.fargs > 0 and args.fargs or nil)
   end, { nargs = "*", complete = completion, desc = "Retry failed, unavailable or cancelled tasks" })

@@ -18,6 +18,9 @@ COMMANDS                                                   *toolchain-commands*
     Cancel a queued task. Running tasks cannot be cancelled.
 :ToolchainLog                                                 *:ToolchainLog*
     Open a read-only snapshot of the persistent JSON-lines log.
+:ToolchainUninstall tool:<package>
+    Remove an independent tool activation pointer and PATH entry, retaining its
+    version files for already running processes.
 :checkhealth toolchain
     Validate declarations and report backend availability without installing.
 
@@ -30,22 +33,23 @@ SETUP                                                        *toolchain-setup*
       concurrency = 2,
       requirements = {
         { provider = 'parser', name = 'lua' },
-        { provider = 'mason', name = 'stylua', executable = 'stylua' },
+        { provider = 'tool', name = 'stylua', executable = 'stylua' },
         { provider = 'system', name = 'git' },
         { provider = 'system', name = 'html_beautify', optional = true },
       },
     })
 <
-Call Mason's setup separately. Backend settings and PATH remain under your
-configuration's control. Requirements may also be a read-only function returning
-a list. Each entry has provider/name, plus optional executable, resolve (returns
-an executable path or nil), and a Mason-only post-install hook. Choose one:
+The independent tool backend appends installed version bin directories to PATH;
+set tools.path = 'skip' to disable this. The optional Mason compatibility backend
+requires Mason setup separately and does not change its settings. Requirements
+may also be a read-only function returning a list. Each entry has provider/name, plus optional executable, resolve (returns
+an executable path or nil), and a managed-tool post-install hook. Choose one:
 post_install(package) for synchronous hooks, or
 post_install_async(package, done, log) for asynchronous hooks. Call done() after
 success, or done(error) after failure. log(output) adds child output to task logs.
 
 Async hooks retain the queue slot until their callback runs, including for an
-already-installed package. Repeated completion callbacks are ignored. They have
+already-installed Mason package; independent intact versions skip their hooks. Repeated completion callbacks are ignored. They have
 no implicit timeout: wait(timeout) returns control but does not stop the hook.
 An existing helper that starts a process and returns must be adapted to call done;
 merely leaving it in post_install still treats its return as completion.
@@ -64,10 +68,10 @@ API                                                          *toolchain-api*
     local tc = require('toolchain')
     tc.plan()                    -- local checks; optional requirement list
     tc.install()                 -- queue requirements; returns task IDs
-    tc.install_ids({'mason:stylua'})
+    tc.install_ids({'tool:stylua'})
     tc.status()                  -- copied task states, messages, attempts, logs
     tc.retry()                   -- failed/unavailable/cancelled; optional ID list
-    tc.cancel('mason:stylua')     -- returns success, reason
+    tc.cancel('tool:stylua')     -- returns success, reason
     local finished, tasks = tc.wait(300000)
     tc.open()
     tc.log_file()
@@ -88,10 +92,10 @@ BOUNDARIES                                                   *toolchain-boundari
 
 Concurrency limits submitted tasks, not every process inside an upstream
 installer. Only queued tasks can be cancelled. Existing system/Nix executables
-satisfy Mason requirements without installation or post_install hooks. Executables
+satisfy managed-tool requirements without installation or post_install hooks. Executables
 inside Mason's install root still receive Mason package checks and hooks.
 
-Logs contain lifecycle events, independent parser build output and Mason output;
+Logs contain lifecycle events, independent tool/parser build output and Mason output;
 legacy treesitter adapter details stay in :TSLog. Persistent logs are append-only.
 Task history lasts one session.
 setup() resets history and is rejected while tasks are queued or running.
@@ -117,3 +121,23 @@ require('toolchain.parsers').info(language) for receipts and integrity. General
 package updates, uninstall and version pruning are not implemented.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
+
+INDEPENDENT TOOLS                                        *toolchain-tools-store*
+
+The tool provider uses pinned recipes in data/tools.json; tools.sources can
+replace or add definitions. Tools support release downloads, isolated npm
+prefixes, Python virtual environments, Cargo Git tags and npm source builds.
+No Mason modules are required. macOS/Linux x86-64 and ARM64 are supported when
+upstream artifacts exist. Install at permanent version paths to preserve Python
+shebangs, then atomically publish a current pointer. Failure retains the old
+version. Explicit installation checks integrity and repairs modified artifacts.
+New npm/Python installs record resolved dependency locks; repairs reuse intact
+locks. Initial transitive dependency resolution is not globally locked.
+
+require('toolchain.tools').executable(package, command) returns a managed wrapper.
+.path(package, resource) returns a declared resource (omit resource for root).
+.info(package) reports the current root, receipt and artifact integrity.
+.remove(package) removes activation only, preserving files for live processes.
+Tool hooks receive { name, path, version, resources } before publication; intact
+versions skip hooks. Use ToolchainInstall after updating the pinned recipe.
+Restart existing clients after installing a new tool version.
