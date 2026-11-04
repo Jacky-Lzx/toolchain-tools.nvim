@@ -83,4 +83,42 @@ t.test("actual backend rechecks skip packages already installed", function()
   t.eq(hooks, 2)
 end)
 
+t.test("actual post-install child process failures are awaited and retryable", function()
+  local exit_code = 7
+  toolchain.setup({
+    notify = false,
+    requirements = {
+      {
+        provider = "mason",
+        name = "toolchain-fixture",
+        executable = "toolchain-fixture",
+        post_install_async = function(_, done, log)
+          vim.system(
+            { "sh", "-c", "printf 'post-install output\\n'; exit " .. exit_code },
+            { text = true },
+            function(result)
+              log(result.stdout)
+              if result.code == 0 then
+                done()
+              else
+                done("post-install process exited with status " .. result.code)
+              end
+            end
+          )
+        end,
+      },
+    },
+  })
+  toolchain.install()
+  assert(toolchain.wait(5000))
+  t.eq(toolchain.status()[1].state, "failed")
+  assert(toolchain.status()[1].message:find("status 7", 1, true))
+  assert(table.concat(toolchain.status()[1].logs, "\n"):find("post-install output", 1, true))
+  exit_code = 0
+  toolchain.retry()
+  assert(toolchain.wait(5000))
+  t.eq(toolchain.status()[1].state, "skipped")
+  t.eq(toolchain.status()[1].attempt, 2)
+end)
+
 t.done()

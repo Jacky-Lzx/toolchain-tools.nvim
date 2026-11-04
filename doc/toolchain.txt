@@ -37,7 +37,16 @@ SETUP                                                        *toolchain-setup*
 Call Mason's setup separately. Backend settings and PATH remain under your
 configuration's control. Requirements may also be a read-only function returning
 a list. Each entry has provider/name, plus optional executable, resolve (returns
-an executable path or nil), and Mason-only synchronous post_install(package).
+an executable path or nil), and a Mason-only post-install hook. Choose one:
+post_install(package) for synchronous hooks, or
+post_install_async(package, done, log) for asynchronous hooks. Call done() after
+success, or done(error) after failure. log(output) adds child output to task logs.
+
+Async hooks retain the queue slot until their callback runs, including for an
+already-installed package. Repeated completion callbacks are ignored. They have
+no implicit timeout: wait(timeout) returns control but does not stop the hook.
+An existing helper that starts a process and returns must be adapted to call done;
+merely leaving it in post_install still treats its return as completion.
 
 Other options: max_log_lines = 200 (bounded output chunks per task), notify = true
 (failure notifications), log_file = stdpath('state') .. '/toolchain-tools.log'

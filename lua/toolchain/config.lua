@@ -1,7 +1,14 @@
 local M = {}
 
 local providers = { mason = true, treesitter = true, system = true }
-local fields = { provider = true, name = true, executable = true, resolve = true, post_install = true }
+local fields = {
+  provider = true,
+  name = true,
+  executable = true,
+  resolve = true,
+  post_install = true,
+  post_install_async = true,
+}
 
 function M.normalize(requirements)
   assert(type(requirements) == "table" and vim.islist(requirements), "requirements must be a list")
@@ -19,7 +26,15 @@ function M.normalize(requirements)
     )
     assert(entry.resolve == nil or type(entry.resolve) == "function", "resolve must be a function")
     assert(entry.post_install == nil or type(entry.post_install) == "function", "post_install must be a function")
-    assert(not entry.post_install or entry.provider == "mason", "post_install is only supported for Mason packages")
+    assert(
+      entry.post_install_async == nil or type(entry.post_install_async) == "function",
+      "post_install_async must be a function"
+    )
+    assert(not (entry.post_install and entry.post_install_async), "choose post_install or post_install_async, not both")
+    assert(
+      not (entry.post_install or entry.post_install_async) or entry.provider == "mason",
+      "post_install hooks are only supported for Mason packages"
+    )
     assert(
       entry.provider ~= "treesitter" or not (entry.executable or entry.resolve),
       "Tree-sitter requirements cannot use executable resolvers"

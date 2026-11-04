@@ -83,6 +83,7 @@ A requirement has `provider` and `name`, with optional fields:
 | `executable` | Command/path to check before a Mason install, or for a system requirement |
 | `resolve` | Function returning an existing executable path, or `nil`/`false`; falls back to `executable` |
 | `post_install` | Synchronous Mason-only hook receiving the package object |
+| `post_install_async` | Mason-only hook receiving `(package, done, log)`; calls `done()` on success or `done(error)` on failure |
 
 System requirements default their executable to `name`; Mason requirements do
 not, since registry package names and executable names can differ. Resolver
@@ -95,6 +96,43 @@ run. Hooks run after installation and for already-installed Mason packages; they
 do not run when a system/Nix executable satisfies the requirement. Write hooks
 so they are safe to run again. A hook error fails the task without removing its
 installed package.
+
+Use exactly one hook field. An asynchronous hook retains the task's queue slot
+until `done` is called, including for an already-installed Mason package. Errors
+thrown while starting either hook fail the task; asynchronous process failures
+must be passed to `done(error)`. Repeated completion callbacks are ignored.
+
+```lua
+{
+  provider = "mason",
+  name = "vue-language-server",
+  post_install_async = function(package, done, log)
+    -- The language-specific helper must call done after its repair process exits,
+    -- or immediately if no repair is needed. It may use log(output) for child output.
+    require("my_vue_repair").run(package:get_install_path(), done, log)
+  end,
+}
+```
+
+A callback-based repair helper can forward a process result like this:
+
+```lua
+vim.system(command, { cwd = directory, text = true }, function(result)
+  log(result.stdout or "")
+  log(result.stderr or "")
+  if result.code == 0 then
+    done()
+  else
+    done("repair process exited with status " .. result.code)
+  end
+end)
+```
+
+Existing functions that start asynchronous work and return immediately must be
+adapted to call this callback, including the current Vue TypeScript repair helper.
+Leaving them in `post_install` still has synchronous semantics. Hooks have no
+implicit timeout: forgetting `done` keeps the task running. `wait(timeout)` can
+return control without marking a still-running process complete or freeing its slot.
 
 Pass a function as `requirements` to reuse your existing language declarations.
 It is evaluated when planning or installing, rather than during setup. For the
@@ -115,6 +153,7 @@ require("toolchain").setup({
         executable = tool.executable,
         resolve = tool.resolve,
         post_install = tool.post_install,
+        post_install_async = tool.post_install_async,
       }
     end
     return requirements
