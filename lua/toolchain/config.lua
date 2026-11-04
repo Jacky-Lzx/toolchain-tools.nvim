@@ -1,6 +1,6 @@
 local M = {}
 
-local providers = { mason = true, treesitter = true, system = true }
+local providers = { mason = true, treesitter = true, parser = true, system = true }
 local fields = {
   provider = true,
   name = true,
@@ -39,7 +39,7 @@ function M.normalize(requirements)
       "post_install hooks are only supported for Mason packages"
     )
     assert(
-      entry.provider ~= "treesitter" or not (entry.executable or entry.resolve),
+      (entry.provider ~= "treesitter" and entry.provider ~= "parser") or not (entry.executable or entry.resolve),
       "Tree-sitter requirements cannot use executable resolvers"
     )
     local id = entry.provider .. ":" .. entry.name
@@ -55,7 +55,8 @@ end
 function M.options(opts)
   opts = opts or {}
   assert(type(opts) == "table", "options must be a table")
-  local allowed = { requirements = true, concurrency = true, max_log_lines = true, log_file = true, notify = true }
+  local allowed =
+    { requirements = true, concurrency = true, max_log_lines = true, log_file = true, notify = true, parsers = true }
   for key in pairs(opts) do
     assert(allowed[key], "unknown option: " .. tostring(key))
   end
@@ -74,6 +75,7 @@ function M.options(opts)
   end
   assert(type(result.notify) == "boolean", "notify must be a boolean")
   assert(result.log_file == false or (type(result.log_file) == "string" and result.log_file ~= ""), "invalid log_file")
+  assert(result.parsers == nil or type(result.parsers) == "table", "parsers must be a table")
   if type(result.requirements) ~= "function" then
     result.requirements = M.normalize(result.requirements)
   end

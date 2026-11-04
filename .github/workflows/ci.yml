@@ -23,4 +23,15 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: v2.6.0
-          args: --check lua tests
+          args: --check lua scripts tests
+  parsers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          version: stable
+          neovim: true
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install tree-sitter-cli --version 0.26.1 --locked
+      - run: sh tests/run.sh --parsers

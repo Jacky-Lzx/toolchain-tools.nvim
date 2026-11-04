@@ -1,0 +1,270 @@
+{
+  "query_source": {
+    "revision": "29212d826054bb2948fa9d3a99eca9bf6a050eb2",
+    "url": "https://github.com/nvim-treesitter/nvim-treesitter"
+  },
+  "revision": "29212d826054bb2948fa9d3a99eca9bf6a050eb2",
+  "sources": {
+    "bash": {
+      "parser": {
+        "revision": "a06c2e4415e9bc0346c6b86d401879ffb44058f7",
+        "url": "https://github.com/tree-sitter/tree-sitter-bash"
+      },
+      "query_path": "runtime/queries/bash"
+    },
+    "bibtex": {
+      "parser": {
+        "revision": "8d04ed27b3bc7929f14b7df9236797dab9f3fa66",
+        "url": "https://github.com/latex-lsp/tree-sitter-bibtex"
+      },
+      "query_path": "runtime/queries/bibtex"
+    },
+    "c": {
+      "parser": {
+        "revision": "b780e47fc780ddc8da13afa35a3f4ed5c157823d",
+        "url": "https://github.com/tree-sitter/tree-sitter-c"
+      },
+      "query_path": "runtime/queries/c"
+    },
+    "cmake": {
+      "parser": {
+        "revision": "58993af75218bc99a1f5a04c832a5937e7c422cb",
+        "url": "https://github.com/uyha/tree-sitter-cmake"
+      },
+      "query_path": "runtime/queries/cmake"
+    },
+    "cpp": {
+      "parser": {
+        "revision": "c009222808634c1014f82438d4883753516a2c24",
+        "url": "https://github.com/tree-sitter/tree-sitter-cpp"
+      },
+      "query_path": "runtime/queries/cpp",
+      "requires": [
+        "c"
+      ]
+    },
+    "css": {
+      "parser": {
+        "revision": "dda5cfc5722c429eaba1c910ca32c2c0c5bb1a3f",
+        "url": "https://github.com/tree-sitter/tree-sitter-css"
+      },
+      "query_path": "runtime/queries/css"
+    },
+    "cuda": {
+      "parser": {
+        "revision": "d58080a327756e4d1d16ec329ba7cb2048f6c6cd",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-cuda"
+      },
+      "query_path": "runtime/queries/cuda",
+      "requires": [
+        "cpp"
+      ]
+    },
+    "ecma": {
+      "query_path": "runtime/queries/ecma"
+    },
+    "fish": {
+      "parser": {
+        "revision": "b7f1d682941e0c62dfcd6bf9ef481638351bab16",
+        "url": "https://github.com/ram02z/tree-sitter-fish"
+      },
+      "query_path": "runtime/queries/fish"
+    },
+    "gdscript": {
+      "parser": {
+        "revision": "9686853b696db07118ad110e440d6de0ca6498b4",
+        "url": "https://github.com/PrestonKnopp/tree-sitter-gdscript"
+      },
+      "query_path": "runtime/queries/gdscript"
+    },
+    "godot_resource": {
+      "parser": {
+        "revision": "302c1895f54bf74d53a08572f7b26a6614209adc",
+        "url": "https://github.com/PrestonKnopp/tree-sitter-godot-resource"
+      },
+      "query_path": "runtime/queries/godot_resource"
+    },
+    "html": {
+      "parser": {
+        "revision": "73a3947324f6efddf9e17c0ea58d454843590cc0",
+        "url": "https://github.com/tree-sitter/tree-sitter-html"
+      },
+      "query_path": "runtime/queries/html",
+      "requires": [
+        "html_tags"
+      ]
+    },
+    "html_tags": {
+      "query_path": "runtime/queries/html_tags"
+    },
+    "java": {
+      "parser": {
+        "revision": "e10607b45ff745f5f876bfa3e94fbcc6b44bdc11",
+        "url": "https://github.com/tree-sitter/tree-sitter-java"
+      },
+      "query_path": "runtime/queries/java"
+    },
+    "javascript": {
+      "parser": {
+        "revision": "58404d8cf191d69f2674a8fd507bd5776f46cb11",
+        "url": "https://github.com/tree-sitter/tree-sitter-javascript"
+      },
+      "query_path": "runtime/queries/javascript",
+      "requires": [
+        "ecma",
+        "jsx"
+      ]
+    },
+    "json": {
+      "parser": {
+        "revision": "254c42a6476413b776221e03982ac8ae159eeb72",
+        "url": "https://github.com/tree-sitter/tree-sitter-json"
+      },
+      "query_path": "runtime/queries/json"
+    },
+    "json5": {
+      "parser": {
+        "revision": "248b8564567087d7866be76569b182f6dd7e14e9",
+        "url": "https://github.com/Joakker/tree-sitter-json5"
+      },
+      "query_path": "runtime/queries/json5"
+    },
+    "jsx": {
+      "query_path": "runtime/queries/jsx"
+    },
+    "kdl": {
+      "parser": {
+        "revision": "e8ff98a113e175b84b92ec2096820517c1e10a66",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-kdl"
+      },
+      "query_path": "runtime/queries/kdl"
+    },
+    "latex": {
+      "parser": {
+        "generate": true,
+        "revision": "fa8df448fc2c0192a8c2f8cfc97de53cb2b4ecb9",
+        "url": "https://github.com/latex-lsp/tree-sitter-latex"
+      },
+      "query_path": "runtime/queries/latex"
+    },
+    "lua": {
+      "parser": {
+        "revision": "10fe0054734eec83049514ea2e718b2a56acd0c9",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-lua"
+      },
+      "query_path": "runtime/queries/lua"
+    },
+    "markdown": {
+      "parser": {
+        "location": "tree-sitter-markdown",
+        "revision": "a0a00f817d02412bd92c54d316f164d827b57b5c",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+      },
+      "query_path": "runtime/queries/markdown",
+      "requires": [
+        "markdown_inline"
+      ]
+    },
+    "markdown_inline": {
+      "parser": {
+        "location": "tree-sitter-markdown-inline",
+        "revision": "a0a00f817d02412bd92c54d316f164d827b57b5c",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+      },
+      "query_path": "runtime/queries/markdown_inline"
+    },
+    "matlab": {
+      "parser": {
+        "revision": "f03d0347acd8bb05d4edd8c845ac1718729e1fad",
+        "url": "https://github.com/acristoffers/tree-sitter-matlab"
+      },
+      "query_path": "runtime/queries/matlab"
+    },
+    "nix": {
+      "parser": {
+        "revision": "32c3ce98afdafc2ec9aedf0280a678750f76254c",
+        "url": "https://github.com/nix-community/tree-sitter-nix"
+      },
+      "query_path": "runtime/queries/nix"
+    },
+    "python": {
+      "parser": {
+        "revision": "293fdc02038ee2bf0e2e206711b69c90ac0d413f",
+        "url": "https://github.com/tree-sitter/tree-sitter-python"
+      },
+      "query_path": "runtime/queries/python"
+    },
+    "regex": {
+      "parser": {
+        "revision": "b2ac15e27fce703d2f37a79ccd94a5c0cbe9720b",
+        "url": "https://github.com/tree-sitter/tree-sitter-regex"
+      },
+      "query_path": "runtime/queries/regex"
+    },
+    "rust": {
+      "parser": {
+        "revision": "77a3747266f4d621d0757825e6b11edcbf991ca5",
+        "url": "https://github.com/tree-sitter/tree-sitter-rust"
+      },
+      "query_path": "runtime/queries/rust"
+    },
+    "swift": {
+      "parser": {
+        "generate": true,
+        "revision": "9e3b87f66f1fd2f3b931376fd3723ab788e337c3",
+        "url": "https://github.com/alex-pinkus/tree-sitter-swift"
+      },
+      "query_path": "runtime/queries/swift"
+    },
+    "systemverilog": {
+      "parser": {
+        "revision": "d6be6119fe4d04c65c567e7b79625aa6280fea34",
+        "url": "https://github.com/gmlarumbe/tree-sitter-systemverilog"
+      },
+      "query_path": "runtime/queries/systemverilog"
+    },
+    "toml": {
+      "parser": {
+        "revision": "64b56832c2cffe41758f28e05c756a3a98d16f41",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-toml"
+      },
+      "query_path": "runtime/queries/toml"
+    },
+    "typescript": {
+      "parser": {
+        "location": "typescript",
+        "revision": "75b3874edb2dc714fb1fd77a32013d0f8699989f",
+        "url": "https://github.com/tree-sitter/tree-sitter-typescript"
+      },
+      "query_path": "runtime/queries/typescript",
+      "requires": [
+        "ecma"
+      ]
+    },
+    "typst": {
+      "parser": {
+        "revision": "46cf4ded12ee974a70bf8457263b67ad7ee0379d",
+        "url": "https://github.com/uben0/tree-sitter-typst"
+      },
+      "query_path": "runtime/queries/typst"
+    },
+    "vue": {
+      "parser": {
+        "revision": "ce8011a414fdf8091f4e4071752efc376f4afb08",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-vue"
+      },
+      "query_path": "runtime/queries/vue",
+      "requires": [
+        "html_tags"
+      ]
+    },
+    "yaml": {
+      "parser": {
+        "revision": "a1c4812a73ec5e089de8e441fdea3a921e8d5079",
+        "url": "https://github.com/tree-sitter-grammars/tree-sitter-yaml"
+      },
+      "query_path": "runtime/queries/yaml"
+    }
+  },
+  "upstream": "nvim-treesitter/nvim-treesitter"
+}

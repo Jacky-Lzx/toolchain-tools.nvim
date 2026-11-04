@@ -13,8 +13,11 @@ export NVIM_LOG_FILE="$test_root/nvim.log" PYTHONDONTWRITEBYTECODE=1
 "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/health.lua
 python3 tests/tui.py
 if [ "${1:-}" = "--integration" ]; then
+  "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/parsers.lua
   "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/integration.lua
+elif [ "${1:-}" = "--parsers" ]; then
+  "${NVIM_BIN:-nvim}" --headless -n -u NONE -i NONE --noplugin -l tests/parsers.lua
 elif [ "$#" -gt 0 ]; then
-  printf 'Usage: sh tests/run.sh [--integration]\n' >&2
+  printf 'Usage: sh tests/run.sh [--integration|--parsers]\n' >&2
   exit 2
 fi

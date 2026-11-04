@@ -1,16 +1,17 @@
 # toolchain-tools.nvim
 
-One installation queue for Tree-sitter parsers, Mason packages, and checks for
+One installation queue for independently built Tree-sitter parsers, Mason packages, and checks for
 tools supplied by Nix or your system package manager.
 
 Inspect requirements, install explicitly, and follow every task in the same
 window. Existing tools take priority; installation failures remain visible and
 can be retried. Nothing is downloaded during setup, planning, or health checks.
 
-Requires Neovim 0.11+. The optional backends have their own requirements:
-[Mason v2](https://github.com/mason-org/mason.nvim) and
-[nvim-treesitter main](https://github.com/nvim-treesitter/nvim-treesitter).
-The legacy nvim-treesitter `master` API is unsupported. This plugin manages
+Requires Neovim 0.11+. The independent `parser` backend needs Git, the Tree-sitter
+CLI, and a C compiler on macOS/Linux. The `mason` backend needs
+[Mason v2](https://github.com/mason-org/mason.nvim). An optional legacy `treesitter`
+adapter still supports [nvim-treesitter main](https://github.com/nvim-treesitter/nvim-treesitter)
+(not its old `master` API). This plugin manages
 installation; highlighting, folding, indentation, LSP configuration, and language
 selection stay with Neovim and your configuration.
 
@@ -22,15 +23,15 @@ For a local checkout with lazy.nvim:
 {
   dir = vim.fn.expand("~/Documents/Github/nvim_plugins/toolchain-tools.nvim"),
   main = "toolchain",
+  lazy = false, -- activate committed parser/query versions before opening files
   dependencies = {
     { "mason-org/mason.nvim", opts = { PATH = "append" } },
-    { "nvim-treesitter/nvim-treesitter", branch = "main", lazy = false },
   },
   opts = {
     concurrency = 2,
     requirements = {
-      { provider = "treesitter", name = "lua" },
-      { provider = "treesitter", name = "markdown" },
+      { provider = "parser", name = "lua" },
+      { provider = "parser", name = "markdown" },
       { provider = "mason", name = "lua-language-server", executable = "lua-language-server" },
       { provider = "mason", name = "stylua", executable = "stylua" },
       { provider = "system", name = "git" },
@@ -44,11 +45,78 @@ If these dependencies already have plugin specs, keep their existing setup there
 Mason must have completed `setup()` before its backend runs. nvim-treesitter's
 default installation directory works without setup; configure a custom directory
 with its own `setup()`. This plugin never changes either backend's settings or
-PATH. Backend build hooks or other plugins may still perform their own installs;
+PATH. The independent `parser` provider does not require nvim-treesitter. Backend
+build hooks or other plugins may still perform their own installs;
 only work submitted through toolchain-tools belongs to this queue.
 
 Run `:ToolchainPlan` to inspect requirements, then `:ToolchainInstall` to install
 them. `:Toolchain` opens the live task window.
+
+## Independent parser installation
+
+`provider = "parser"` downloads pinned Git commits, builds with `tree-sitter build`,
+and installs matching queries. It never requires nvim-treesitter Lua modules.
+The bundled registry covers the current language profiles and their query
+dependencies (35 definitions); see [source attribution](third_party/README.md).
+Queries remain pinned data from the upstream nvim-treesitter repository. This
+stage replaces installation, while reusing its maintained query collection.
+
+```lua
+require("toolchain").setup({
+  requirements = { { provider = "parser", name = "latex" } },
+  parsers = {
+    -- Defaults below; neither directory is created until installation.
+    install_dir = vim.fn.stdpath("data") .. "/toolchain-tools/parsers",
+    cache_dir = vim.fn.stdpath("cache") .. "/toolchain-tools/parsers",
+    sources = {
+      latex = {
+        parser = {
+          url = "https://github.com/your-org/tree-sitter-latex",
+          revision = "<full 40-character commit SHA>",
+          generate = true,
+        },
+      },
+    },
+  },
+})
+```
+
+Language definitions accept `parser = { url, revision, location?, generate?,
+generate_from_json?, queries? }`, `query_path` (relative to the query source),
+`query_source = { url, revision }`, and `requires = { "shared_language" }`.
+`generate_from_json` defaults to true when generation is requested; use false
+for grammars that must generate from grammar.js. `parser.queries` selects queries
+from the grammar repository instead of the separate query source. A definition
+without `parser` installs shared queries only. New definitions can be supplied in
+`parsers.sources`; overrides replace individual definition fields. Local Git
+repository paths are supported as URLs for offline builds. Revisions must be
+complete commit SHAs, including when replacing a tag or branch-based configuration.
+
+Dependencies are installed before their consumer and concurrent requests share
+work. Inherited query text is frozen inside the consumer's version so later
+shared-query updates cannot change an older parser's query bundle. Shared-query-only
+directories are build inputs and are not added to runtimepath. An isolated child
+Neovim validates the library ABI and queries, including
+inherited queries, before the completed version becomes current. Receipts record
+source revisions, ABI, architecture-dependent fingerprints and file hashes. Repeating
+an installation skips intact artifacts and repairs missing or changed files.
+Changing the pinned sources rebuilds the relevant artifacts on explicit installation.
+
+Each complete version has its own immutable runtime directory. A single renamed
+JSON pointer selects the next version; failed builds retain the previous pointer.
+Setup activates current versions once per language in the session. Installation
+does not switch versions underneath a loaded parser: **restart Neovim after an
+installation to use its new parser/query versions**. Old versions are retained
+so other running sessions keep their files; no automatic cleanup is performed.
+Per-language/source locks reject concurrent writers from another process, and
+dead owners can be recovered on retry. Build stdout/stderr goes to task logs.
+
+Inspect an installed language with
+`require("toolchain.parsers").info("latex")` (current/session roots, receipt, and
+artifact integrity). Existing parsers in `site/parser` are never overwritten.
+During migration, keep your existing runtime provider for languages that have
+not yet been independently installed, filetype aliases, or custom predicates.
+The `treesitter` provider remains available as an explicit compatibility adapter.
 
 ## Commands and task window
 
@@ -153,7 +221,7 @@ require("toolchain").setup({
     local language = require("languages").current()
     local requirements = {}
     for _, name in ipairs(language.parsers) do
-      requirements[#requirements + 1] = { provider = "treesitter", name = name }
+      requirements[#requirements + 1] = { provider = "parser", name = name }
     end
     for _, tool in ipairs(language.tools) do
       requirements[#requirements + 1] = {
@@ -237,18 +305,19 @@ Each task transition/output chunk emits `User ToolchainUpdated` with
 - The Tree-sitter backend checks actual parser installation, observes both task
   errors and boolean failure results, and verifies the parser appears afterward.
   Its upstream backend retains ownership of parser/query compatibility.
-- Persistent logs contain lifecycle events and Mason stdout/stderr. Detailed
-  Tree-sitter build output remains available through upstream `:TSLog`.
+- Persistent logs contain lifecycle events, native parser build output and Mason
+  stdout/stderr. The legacy `treesitter` adapter's build details remain in `:TSLog`.
 - Memory logs are bounded per task. The persistent log is append-only; rotate or
   remove it yourself when needed. Session tasks are not resumed after a restart.
-- This first version installs missing dependencies. Updates, uninstallation,
-  version lockfiles, and a replacement parser compiler are future work.
+- Managed parser updates follow explicit pinned-source changes and integrity checks.
+  General package updates, uninstallation and automatic version pruning are future work.
 
 ## Validation
 
 ```sh
 sh tests/run.sh
-stylua --check lua tests
+stylua --check lua scripts tests
+sh tests/run.sh --parsers # offline real Git/build/rollback tests; needs tree-sitter CLI
 
 # Real upstream APIs and installation in disposable XDG directories; no downloads.
 TOOLCHAIN_MASON_ROOT=/absolute/path/to/mason.nvim \

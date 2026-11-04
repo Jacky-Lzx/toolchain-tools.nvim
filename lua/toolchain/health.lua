@@ -19,11 +19,15 @@ function M.check()
     end
   end
   for provider in pairs(needed) do
-    local module = provider == "mason" and "mason" or "nvim-treesitter"
-    if #vim.api.nvim_get_runtime_file("lua/" .. module .. "/init.lua", false) == 0 then
-      vim.health.warn(module .. " is not on runtimepath (it may need to be loaded by your plugin manager)")
+    if provider == "parser" then
+      vim.health.info("Independent parsers use git, tree-sitter CLI and a C compiler; no nvim-treesitter API is used")
     else
-      vim.health.ok(module .. " is on runtimepath; backend checks run only on explicit installation")
+      local module = provider == "mason" and "mason" or "nvim-treesitter"
+      if #vim.api.nvim_get_runtime_file("lua/" .. module .. "/init.lua", false) == 0 then
+        vim.health.warn(module .. " is not on runtimepath (it may need to be loaded by your plugin manager)")
+      else
+        vim.health.ok(module .. " is on runtimepath; backend checks run only on explicit installation")
+      end
     end
   end
   vim.health.info("Plans and health checks never refresh registries or install packages")

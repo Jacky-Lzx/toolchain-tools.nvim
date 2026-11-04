@@ -1,7 +1,8 @@
 *toolchain.txt*       Unified development dependency installation
 
-Requires Neovim 0.11+. Optional installation backends: mason.nvim v2 and
-nvim-treesitter main (not legacy master). See README.md for complete examples.
+Requires Neovim 0.11+. Independent parser backend: Git, Tree-sitter CLI and a C
+compiler on macOS/Linux. Mason needs mason.nvim v2; the legacy treesitter adapter
+needs nvim-treesitter main. See README.md for complete examples.
 
 COMMANDS                                                   *toolchain-commands*
 
@@ -28,7 +29,7 @@ SETUP                                                        *toolchain-setup*
     require('toolchain').setup({
       concurrency = 2,
       requirements = {
-        { provider = 'treesitter', name = 'lua' },
+        { provider = 'parser', name = 'lua' },
         { provider = 'mason', name = 'stylua', executable = 'stylua' },
         { provider = 'system', name = 'git' },
         { provider = 'system', name = 'html_beautify', optional = true },
@@ -90,11 +91,25 @@ installer. Only queued tasks can be cancelled. Existing system/Nix executables
 satisfy Mason requirements without installation or post_install hooks. Executables
 inside Mason's install root still receive Mason package checks and hooks.
 
-Logs contain lifecycle events and Mason output; Tree-sitter build output stays
-in :TSLog. Persistent logs are append-only. Task history lasts one session.
+Logs contain lifecycle events, independent parser build output and Mason output;
+legacy treesitter adapter details stay in :TSLog. Persistent logs are append-only.
+Task history lasts one session.
 setup() resets history and is rejected while tasks are queued or running.
 
-This version installs missing dependencies. It does not update, uninstall, lock
-versions, replace upstream build implementations, or configure editor features.
+Independent parser sources and queries use pinned commit SHAs. Installation
+builds and validates a complete version, then atomically changes its current
+pointer. Failed builds preserve the previous version. Repeated installation
+checks file hashes and repairs damaged artifacts. Shared-query dependencies are
+installed first. Sources are cached; git/build output is captured in task logs.
+
+Setup activates immutable runtime paths once per language. Restart Neovim after
+installation to activate new versions. Old versions and site/parser installations
+are retained for existing sessions and migration. nvim-treesitter is not required
+by this backend; its pinned query collection is still used as data.
+
+Configure parsers.install_dir, parsers.cache_dir, parsers.sources (per-language
+overrides) and parsers.query_source. See README.md for the source schema. Inspect
+require('toolchain.parsers').info(language) for receipts and integrity. General
+package updates, uninstall and version pruning are not implemented.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
