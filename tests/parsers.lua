@@ -76,6 +76,8 @@ t.test("independent backend builds pinned Git sources and coalesces shared query
     assert(task.state == "installed", vim.inspect(task))
   end
   assert(not package.loaded["nvim-treesitter"])
+  local pointer = assert(util.json(install_dir .. "/current/toolchain_fixture.json"))
+  assert(pointer.schema == 1 and pointer.parser == true and pointer.receipt.size > 0)
   local receipt = assert(util.json(version("toolchain_fixture") .. "/receipt.json"))
   t.eq(receipt.parser.revision, revision)
   assert(receipt.artifacts["parser/toolchain_fixture.so"])

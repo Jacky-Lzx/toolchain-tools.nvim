@@ -215,6 +215,15 @@ Changing the pinned sources rebuilds the relevant artifacts on explicit installa
 
 Each complete version has its own immutable runtime directory. A single renamed
 JSON pointer selects the next version; failed builds retain the previous pointer.
+Activation pointers carry the parser flag and receipt size/mtime, so startup can
+mount unchanged versions without decoding each full receipt. Old pointers,
+malformed metadata, and changed receipts fall back to reading the receipt.
+`:ToolchainRefreshParsers` (or `require("toolchain.parsers").refresh_activation()`)
+explicitly refreshes existing pointers under per-language locks. It changes no
+selected versions or version contents. New installations write this metadata
+automatically. Setup does not refresh pointers; installation and `info()` retain
+full artifact validation.
+
 Setup activates current versions once per language in the session. Installation
 does not switch versions underneath a loaded parser: **restart Neovim after an
 installation to use its new parser/query versions**. Old versions are retained

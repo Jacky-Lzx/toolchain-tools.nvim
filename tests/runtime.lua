@@ -143,4 +143,61 @@ t.test("parser activation batches runtime paths and preserves immutable preceden
   parsers.setup()
 end)
 
+t.test("activation metadata avoids receipt decoding and falls back on stale or old pointers", function()
+  local parsers, util = require("toolchain.parsers"), require("toolchain.parser_util")
+  local root = vim.fs.normalize(vim.fn.stdpath("state") .. "/activation-metadata")
+  local original = vim.o.runtimepath
+  local names = { "meta_healthy", "meta_changed", "meta_legacy", "meta_invalid", "meta_queries" }
+  local version, roots = "aaaaaaaa-1-1", {}
+  vim.fn.mkdir(root .. "/current", "p")
+  for _, name in ipairs(names) do
+    local path = root .. "/versions/" .. name .. "/" .. version
+    roots[name] = path
+    vim.fn.mkdir(path, "p")
+    util.write_json(
+      path .. "/receipt.json",
+      { schema = 1, language = name, parser = name ~= "meta_queries" and {} or nil }
+    )
+    util.write_json(root .. "/current/" .. name .. ".json", { version = version })
+  end
+  parsers.setup({ install_dir = root, filetypes = false })
+  t.eq(parsers.refresh_activation(), { updated = #names, unchanged = 0 })
+  t.eq(parsers.refresh_activation(), { updated = 0, unchanged = #names })
+  for _, name in ipairs(names) do
+    t.eq(util.json(root .. "/current/" .. name .. ".json").version, version)
+  end
+  local release = util.lock(root .. "/locks/meta_healthy.lock")
+  assert(not pcall(parsers.refresh_activation))
+  release()
+  util.write_json(root .. "/current/meta_legacy.json", { version = version })
+  local invalid = util.json(root .. "/current/meta_invalid.json")
+  invalid.receipt = false
+  util.write_json(root .. "/current/meta_invalid.json", invalid)
+  util.write_json(roots.meta_changed .. "/receipt.json", { schema = 1, language = "wrong_language", parser = {} })
+  local json, reads = util.json, {}
+  util.json = function(path)
+    reads[path] = (reads[path] or 0) + 1
+    return json(path)
+  end
+  local ok, err = pcall(parsers.activate)
+  util.json = json
+  assert(ok, err)
+  t.eq(reads[roots.meta_healthy .. "/receipt.json"], nil)
+  t.eq(reads[roots.meta_queries .. "/receipt.json"], nil)
+  for _, name in ipairs({ "meta_changed", "meta_legacy", "meta_invalid" }) do
+    t.eq(reads[roots[name] .. "/receipt.json"], 1)
+  end
+  local paths = vim.api.nvim_list_runtime_paths()
+  assert(vim.list_contains(paths, roots.meta_healthy))
+  assert(vim.list_contains(paths, roots.meta_legacy))
+  assert(vim.list_contains(paths, roots.meta_invalid))
+  assert(not vim.list_contains(paths, roots.meta_changed))
+  assert(not vim.list_contains(paths, roots.meta_queries))
+  assert(not pcall(parsers.refresh_activation), "invalid receipts must not be republished")
+  assert(vim.fn.filereadable(root .. "/locks/meta_changed.lock") == 0, "refresh errors must release the lock")
+  t.eq(util.json(root .. "/current/meta_changed.json").version, version)
+  vim.o.runtimepath = original
+  parsers.setup()
+end)
+
 t.done()

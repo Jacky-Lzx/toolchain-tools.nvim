@@ -79,10 +79,87 @@ end
 
 local function active(name)
   local current = util.json(vim.fs.joinpath(settings().install_dir, "current", name .. ".json"))
-  if not current or type(current.version) ~= "string" or not current.version:match("^[a-f0-9]+%-%d+%-%d+$") then
+  if
+    type(current) ~= "table"
+    or type(current.version) ~= "string"
+    or not current.version:match("^[a-f0-9]+%-%d+%-%d+$")
+  then
     return
   end
-  return vim.fs.joinpath(settings().install_dir, "versions", name, current.version)
+  return vim.fs.joinpath(settings().install_dir, "versions", name, current.version), current
+end
+
+local function receipt_stamp(stat)
+  return stat and { size = stat.size, sec = stat.mtime.sec, nsec = stat.mtime.nsec } or nil
+end
+
+local function activation_pointer(name, version, path, receipt)
+  assert(receipt and receipt.schema == 1 and receipt.language == name, "Invalid parser receipt: " .. name)
+  return {
+    schema = 1,
+    version = version,
+    language = name,
+    parser = not not receipt.parser,
+    receipt = assert(receipt_stamp(vim.uv.fs_stat(path .. "/receipt.json")), "Missing parser receipt: " .. name),
+  }
+end
+
+local function activation_receipt(name, path, pointer)
+  if not path then
+    return
+  end
+  if
+    pointer.schema == 1
+    and pointer.language == name
+    and type(pointer.parser) == "boolean"
+    and type(pointer.receipt) == "table"
+  then
+    local stamp = receipt_stamp(vim.uv.fs_stat(path .. "/receipt.json"))
+    local cached = pointer.receipt
+    if stamp and stamp.size == cached.size and stamp.sec == cached.sec and stamp.nsec == cached.nsec then
+      return pointer
+    end
+  end
+  -- Old pointers and changed receipts retain the original JSON validation path.
+  return util.json(path .. "/receipt.json")
+end
+
+-- Explicit metadata migration only. Setup remains read-only apart from tool
+-- session leases; selected versions and version contents are never changed.
+function M.refresh_activation()
+  local directory = settings().install_dir .. "/current"
+  local result = { updated = 0, unchanged = 0 }
+  if vim.fn.isdirectory(directory) == 0 then
+    return result
+  end
+  for file, kind in vim.fs.dir(directory) do
+    local name = kind == "file" and file:match("^([a-z][a-z0-9_]*)%.json$")
+    if name then
+      local release = util.lock(settings().install_dir .. "/locks/" .. name .. ".lock")
+      local temporary = directory .. "/" .. file .. "." .. vim.uv.os_getpid() .. ".tmp"
+      local ok, changed = pcall(function()
+        local path, previous = active(name)
+        assert(path, "Invalid parser pointer: " .. name)
+        local before = receipt_stamp(vim.uv.fs_stat(path .. "/receipt.json"))
+        local receipt = util.json(path .. "/receipt.json")
+        local pointer = activation_pointer(name, previous.version, path, receipt)
+        assert(vim.deep_equal(before, pointer.receipt), "Parser receipt changed; retry: " .. name)
+        if vim.deep_equal(previous, pointer) then
+          return false
+        end
+        assert(vim.deep_equal(previous, util.json(directory .. "/" .. file)), "Parser pointer changed; retry: " .. name)
+        util.write_json(temporary, pointer)
+        assert(vim.uv.fs_rename(temporary, directory .. "/" .. file))
+        return true
+      end)
+      vim.uv.fs_unlink(temporary)
+      release()
+      assert(ok, changed)
+      local field = changed and "updated" or "unchanged"
+      result[field] = result[field] + 1
+    end
+  end
+  return result
 end
 
 local function fingerprint(name)
@@ -128,8 +205,8 @@ function M.activate()
   for name, kind in vim.fs.dir(directory) do
     local lang = name:match("^([a-z][a-z0-9_]*)%.json$")
     if kind == "file" and lang and not activated[lang] then
-      local path = active(lang)
-      local receipt = path and util.json(path .. "/receipt.json")
+      local path, pointer = active(lang)
+      local receipt = activation_receipt(lang, path, pointer)
       if receipt and receipt.parser and receipt.language == lang and vim.fn.isdirectory(path) == 1 then
         paths[#paths + 1] = path
         activated[lang] = path
@@ -296,7 +373,7 @@ ensure = function(name, ctx, done)
         }, nil, log)
       end
     end
-    util.write_json(stage .. "/receipt.json", {
+    local receipt = {
       schema = 1,
       language = name,
       fingerprint = desired,
@@ -304,14 +381,15 @@ ensure = function(name, ctx, done)
       query_source = entry.query_source or definitions().query_source,
       abi = vim.treesitter.language_version,
       artifacts = util.files(stage),
-    })
+    }
+    util.write_json(stage .. "/receipt.json", receipt)
     local version = desired:sub(1, 16) .. "-" .. token
     local destination = vim.fs.joinpath(settings().install_dir, "versions", name, version)
     assert(vim.uv.fs_rename(stage, destination))
     local current_dir = vim.fs.joinpath(settings().install_dir, "current")
     vim.fn.mkdir(current_dir, "p")
     local pointer = vim.fs.joinpath(current_dir, name .. ".json")
-    util.write_json(pointer .. "." .. token, { version = version })
+    util.write_json(pointer .. "." .. token, activation_pointer(name, version, destination, receipt))
     assert(vim.uv.fs_rename(pointer .. "." .. token, pointer))
     return "installed"
   end, function(ok, value)
