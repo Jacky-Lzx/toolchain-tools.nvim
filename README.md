@@ -6,6 +6,9 @@ tools supplied by Nix or your system package manager.
 Inspect requirements, install explicitly, and follow every task in the same
 window. Existing tools take priority; installation failures remain visible and
 can be retried. Nothing is downloaded during setup, planning, or health checks.
+The installation queue loads on the first queue operation; setup, planning, and
+empty status/wait checks leave it unloaded. Installed tool PATH entries, immutable
+parser/query paths, and tool session leases are still activated synchronously.
 
 Requires Neovim 0.11+. The independent `parser` backend needs Git, the Tree-sitter
 CLI, and a C compiler on macOS/Linux. Independent tools use host download/archive

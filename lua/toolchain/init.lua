@@ -35,7 +35,7 @@ local function execute(spec, ctx)
 end
 
 local function ensure_setup()
-  if not queue then
+  if not options then
     M.setup()
   end
 end
@@ -53,13 +53,22 @@ function M.setup(opts)
   require("toolchain.parsers").activate()
   require("toolchain.tools").activate()
   log_error_reported = false
-  queue = require("toolchain.queue").new({
-    concurrency = options.concurrency,
-    max_log_lines = options.max_log_lines,
-    execute = execute,
-    on_change = changed,
-  })
+  queue = nil
   require("toolchain.commands").setup()
+end
+
+-- Installation scheduling is irrelevant until an operation needs a queue.
+-- Parser/query mounting, tool PATH and session protection remain synchronous.
+local function ensure_queue()
+  ensure_setup()
+  if not queue then
+    queue = require("toolchain.queue").new({
+      concurrency = options.concurrency,
+      max_log_lines = options.max_log_lines,
+      execute = execute,
+      on_change = changed,
+    })
+  end
 end
 
 local function requirements(input)
@@ -105,12 +114,12 @@ function M.plan(input)
 end
 
 function M.install(input)
-  ensure_setup()
+  ensure_queue()
   return queue:submit(requirements(input))
 end
 
 function M.install_ids(ids)
-  ensure_setup()
+  ensure_queue()
   assert(type(ids) == "table" and vim.islist(ids), "ids must be a list")
   local configured, selected, result = {}, {}, {}
   for _, spec in ipairs(requirements()) do
@@ -127,7 +136,7 @@ function M.install_ids(ids)
 end
 
 function M.lock(path, update)
-  ensure_setup()
+  ensure_queue()
   local specs, names = {}, {}
   for _, spec in ipairs(requirements()) do
     if spec.provider == "tool" then
@@ -210,16 +219,16 @@ end
 
 function M.status()
   ensure_setup()
-  return queue:snapshot()
+  return queue and queue:snapshot() or {}
 end
 
 function M.retry(ids)
-  ensure_setup()
+  ensure_queue()
   return queue:retry(ids)
 end
 
 function M.cancel(id)
-  ensure_setup()
+  ensure_queue()
   return queue:cancel(id)
 end
 
@@ -230,11 +239,11 @@ function M.wait(timeout)
     "wait requires a finite timeout in milliseconds"
   )
   local function idle()
-    return not queue:busy()
+    return (not queue or not queue:busy())
       and not (lock_operation and (lock_operation.state == "resolving" or lock_operation.state == "writing"))
   end
   local finished = idle() or vim.wait(timeout, idle, 10)
-  return finished, queue:snapshot()
+  return finished, queue and queue:snapshot() or {}
 end
 
 function M.log_file()

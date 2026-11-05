@@ -13,6 +13,8 @@ t.test("require and setup do not load installers or register buffer hooks", func
   t.eq(plan[1].state, "check")
   assert(not package.loaded.mason and not package.loaded["nvim-treesitter"])
   t.eq(#toolchain.status(), 0)
+  assert(toolchain.wait(0))
+  assert(not package.loaded["toolchain.queue"], "Setup, plan and empty status/wait must leave installers cold")
 end)
 
 t.test("existing executables bypass Mason and its post_install hook", function()

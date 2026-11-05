@@ -125,7 +125,12 @@ t.test("parser activation batches runtime paths and preserves immutable preceden
     end
     return set(name, ...)
   end
+  local list_paths = vim.api.nvim_list_runtime_paths
+  vim.api.nvim_list_runtime_paths = function()
+    error("activation must not stat unrelated runtime directories")
+  end
   parsers.activate()
+  vim.api.nvim_list_runtime_paths = list_paths
   local expected = { paths.alpha, paths.zeta }
   vim.list_extend(expected, existing)
   t.eq(vim.api.nvim_list_runtime_paths(), expected)

@@ -127,25 +127,27 @@ function M.activate()
   local paths = {}
   for name, kind in vim.fs.dir(directory) do
     local lang = name:match("^([a-z][a-z0-9_]*)%.json$")
-    if kind == "file" and lang then
+    if kind == "file" and lang and not activated[lang] then
       local path = active(lang)
       local receipt = path and util.json(path .. "/receipt.json")
-      if
-        not activated[lang]
-        and receipt
-        and receipt.parser
-        and receipt.language == lang
-        and vim.fn.isdirectory(path) == 1
-      then
+      if receipt and receipt.parser and receipt.language == lang and vim.fn.isdirectory(path) == 1 then
         paths[#paths + 1] = path
         activated[lang] = path
       end
     end
   end
+  if #paths == 0 then
+    return
+  end
   table.sort(paths)
   local present, additions = {}, {}
-  for _, path in ipairs(vim.api.nvim_list_runtime_paths()) do
-    present[path] = true
+  -- Enumerating expanded runtime paths stats/globs every installed parser root.
+  -- Literal option entries need only splitting; retain native expansion for patterns.
+  local runtime = vim.o.runtimepath
+  local expanded = runtime:find("[$~*?%[]") ~= nil
+  local existing = expanded and vim.api.nvim_list_runtime_paths() or vim.fn.split(runtime, [[\\\@<!,]])
+  for _, path in ipairs(existing) do
+    present[expanded and path or path:gsub("\\,", ",")] = true
   end
   for _, path in ipairs(paths) do
     if not present[path] then
