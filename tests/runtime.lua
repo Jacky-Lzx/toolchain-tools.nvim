@@ -100,4 +100,42 @@ t.test("invalid runtime options do not replace the previous parser store", funct
   t.eq(require("toolchain.parsers").info("lua").current, directory .. "/versions/lua/abcd-1-2")
 end)
 
+t.test("parser activation batches runtime paths and preserves immutable precedence", function()
+  local parsers = require("toolchain.parsers")
+  local util = require("toolchain.parser_util")
+  local root = vim.fs.normalize(vim.fn.stdpath("state") .. "/activation,fixture")
+  local original = vim.o.runtimepath
+  local paths = {}
+  for _, language in ipairs({ "alpha", "beta", "zeta" }) do
+    local version = "aaaaaaaa-1-1"
+    local path = root .. "/versions/" .. language .. "/" .. version
+    paths[language] = path
+    vim.fn.mkdir(path, "p")
+    vim.fn.mkdir(root .. "/current", "p")
+    util.write_json(root .. "/current/" .. language .. ".json", { version = version })
+    util.write_json(path .. "/receipt.json", { language = language, parser = {} })
+  end
+  vim.o.runtimepath = paths.beta:gsub(",", "\\,") .. "," .. original
+  local existing = vim.api.nvim_list_runtime_paths()
+  parsers.setup({ install_dir = root })
+  local set, writes = vim.api.nvim_set_option_value, 0
+  vim.api.nvim_set_option_value = function(name, ...)
+    if name == "runtimepath" then
+      writes = writes + 1
+    end
+    return set(name, ...)
+  end
+  parsers.activate()
+  local expected = { paths.alpha, paths.zeta }
+  vim.list_extend(expected, existing)
+  t.eq(vim.api.nvim_list_runtime_paths(), expected)
+  t.eq(writes, 1)
+  parsers.activate()
+  t.eq(writes, 1)
+  t.eq(vim.api.nvim_list_runtime_paths(), expected)
+  vim.api.nvim_set_option_value = set
+  vim.o.runtimepath = original
+  parsers.setup()
+end)
+
 t.done()

@@ -143,10 +143,21 @@ function M.activate()
     end
   end
   table.sort(paths)
-  for i = #paths, 1, -1 do
-    if not vim.list_contains(vim.opt.rtp:get(), paths[i]) then
-      vim.opt.rtp:prepend(paths[i])
+  local present, additions = {}, {}
+  for _, path in ipairs(vim.api.nvim_list_runtime_paths()) do
+    present[path] = true
+  end
+  for _, path in ipairs(paths) do
+    if not present[path] then
+      additions[#additions + 1] = path:gsub(",", "\\,")
+      present[path] = true
     end
+  end
+  -- Preserve sorted precedence and existing entries with one option update.
+  -- Repeated prepends rebuild the entire runtime path for each installed parser.
+  if #additions > 0 then
+    local current = vim.o.runtimepath
+    vim.o.runtimepath = table.concat(additions, ",") .. (current ~= "" and "," .. current or "")
   end
 end
 

@@ -51,7 +51,16 @@ function M.record(store, roots)
     vim.fn.mkdir(store .. "/sessions", "p")
     local versions = vim.tbl_keys(state.roots)
     table.sort(versions)
-    util.write_json(state.file .. ".tmp", { schema = 1, pid = uv.os_getpid(), versions = versions })
+    -- A lease protects a live process and is irrelevant after a system crash.
+    -- Publish it synchronously/atomically without waiting for durable disk sync.
+    assert(
+      vim.fn.writefile(
+        { vim.json.encode({ schema = 1, pid = uv.os_getpid(), versions = versions }) },
+        state.file .. ".tmp",
+        "S"
+      ) == 0,
+      "Cannot write tool session"
+    )
     assert(uv.fs_rename(state.file .. ".tmp", state.file))
   end)
   state.unrecorded = not ok
