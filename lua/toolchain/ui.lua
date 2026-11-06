@@ -119,13 +119,13 @@ function M.open(plan)
       pcall(vim.api.nvim_del_augroup_by_id, group)
     end,
   })
-  local function map(key, fn)
+  local function map(key, fn, desc)
     vim.keymap.set("n", key, function()
       local ok, err = pcall(fn)
       if not ok then
         vim.notify(tostring(err), vim.log.levels.ERROR, { title = "toolchain-tools" })
       end
-    end, { buffer = buf, nowait = true, silent = true })
+    end, { buffer = buf, nowait = true, silent = true, desc = desc })
   end
   local function selected()
     return view.detail or view.rows[vim.api.nvim_win_get_cursor(win)[1]]
@@ -133,30 +133,30 @@ function M.open(plan)
   for _, key in ipairs({ "q", "<Esc>" }) do
     map(key, function()
       vim.api.nvim_win_close(win, true)
-    end)
+    end, "Close toolchain status")
   end
   map("i", function()
     require("toolchain").install()
     view.plan, view.detail = false, nil
     refresh()
-  end)
+  end, "Install required tools")
   map("r", function()
     assert(not view.plan, "Install the plan before retrying tasks")
     local id = selected()
     assert(id, "Select a task first")
     require("toolchain").retry({ id })
-  end)
+  end, "Retry selected tool task")
   map("c", function()
     assert(not view.plan, "The plan contains no queued tasks")
     local id = selected()
     assert(id, "Select a task first")
     local ok, err = require("toolchain").cancel(id)
     assert(ok, err)
-  end)
+  end, "Cancel selected tool task")
   map("<CR>", function()
     view.detail = not view.detail and selected() or nil
     refresh()
-  end)
+  end, "Show or hide tool task details")
   render(entries)
   vim.api.nvim_win_set_cursor(win, { 4, 0 })
 end

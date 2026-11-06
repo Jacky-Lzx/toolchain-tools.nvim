@@ -103,7 +103,7 @@ function M.setup()
     vim.bo.buftype, vim.bo.bufhidden, vim.bo.swapfile, vim.bo.filetype = "nofile", "wipe", false, "toolchain-versions"
     vim.api.nvim_buf_set_lines(0, 0, -1, false, lines)
     vim.bo.modifiable = false
-    vim.keymap.set("n", "q", "<Cmd>close<CR>", { buffer = true, silent = true })
+    vim.keymap.set("n", "q", "<Cmd>close<CR>", { buffer = true, silent = true, desc = "Close installed tool versions" })
   end
   command("ToolchainVersions", function(args)
     versions(args, false)
