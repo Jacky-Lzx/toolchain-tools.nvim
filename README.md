@@ -504,3 +504,10 @@ docker run --rm --cpus=2 --memory=1g --pids-limit=256 \
 
 The checkout is mounted read-only. All tool stores and caches are disposable;
 the offline suite uses loopback fixture registries with external networking disabled.
+
+## Command ownership
+
+Commands belong to the plugin; choose global entry keys and short aliases in
+your configuration. Registration reports same-name conflicts without replacing
+user commands. Reconfiguration refreshes only commands still owned by this
+plugin, and cleanup preserves subsequent user replacements.

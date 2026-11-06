@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 cd "$(dirname "$0")/.."
+nvim --headless -u NONE -i NONE --noplugin -l tests/command_ownership.lua
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/toolchain-tools-tests.XXXXXX")
 trap 'rm -rf "$test_root"' EXIT HUP INT TERM
 export XDG_DATA_HOME="$test_root/data" XDG_STATE_HOME="$test_root/state" XDG_CACHE_HOME="$test_root/cache"

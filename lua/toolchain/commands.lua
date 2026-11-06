@@ -19,7 +19,7 @@ function M.setup()
     return result
   end
   local function command(name, fn, opts)
-    vim.api.nvim_create_user_command(name, guarded(fn), vim.tbl_extend("force", { force = true }, opts or {}))
+    require("toolchain.user_command").create(name, guarded(fn), vim.tbl_extend("force", { force = true }, opts or {}))
   end
   command("Toolchain", function()
     require("toolchain").open()
