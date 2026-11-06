@@ -511,3 +511,15 @@ Commands belong to the plugin; choose global entry keys and short aliases in
 your configuration. Registration reports same-name conflicts without replacing
 user commands. Reconfiguration refreshes only commands still owned by this
 plugin, and cleanup preserves subsequent user replacements.
+
+## Setup contract
+
+`setup(nil)` uses defaults. Configuration must be a table; caller-owned tables
+are copied before use. Invalid configuration types do not replace live handlers
+or commands. Repeating setup must not accumulate automatic registrations.
+
+Parser and tool options are both validated before activation changes. `dispose()`
+closes the scheduling UI, removes owned commands and forgets scheduling options.
+Like setup, it rejects queued/running installations or active lock operations.
+It does not uninstall assets, remove PATH/runtimepath entries or clear session
+leases: already loaded parsers and running tools may still use those files.

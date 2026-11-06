@@ -41,20 +41,41 @@ local function ensure_setup()
 end
 
 function M.setup(opts)
+  assert(opts == nil or type(opts) == "table", "toolchain-tools.nvim: setup expects a table")
+  opts = vim.deepcopy(opts or {})
   assert(not queue or not queue:busy(), "Cannot reconfigure toolchain-tools while tasks are queued or running")
   assert(
     not lock_operation or (lock_operation.state ~= "resolving" and lock_operation.state ~= "writing"),
     "Cannot reconfigure while a lock operation is active"
   )
   local new_options = config.options(opts)
-  require("toolchain.parsers").setup(new_options.parsers)
-  require("toolchain.tools").setup(new_options.tools)
+  local parsers, tools = require("toolchain.parsers"), require("toolchain.tools")
+  local parser_options, tool_options = parsers.resolve(new_options.parsers), tools.resolve(new_options.tools)
+  parsers.setup(parser_options)
+  tools.setup(tool_options)
   options = new_options
   require("toolchain.parsers").activate()
   require("toolchain.tools").activate()
   log_error_reported = false
   queue = nil
   require("toolchain.commands").setup()
+end
+
+-- Installed assets and live-session leases outlive the scheduling interface.
+function M.dispose()
+  assert(not queue or not queue:busy(), "Cannot dispose toolchain-tools while tasks are queued or running")
+  assert(
+    not lock_operation or (lock_operation.state ~= "resolving" and lock_operation.state ~= "writing"),
+    "Cannot dispose while a lock operation is active"
+  )
+  local ui = package.loaded["toolchain.ui"]
+  if ui then
+    ui.dispose()
+  end
+  require("toolchain.commands").dispose()
+  require("toolchain.parsers").reset()
+  require("toolchain.tools").reset()
+  options, queue, lock_operation, lock_finish = nil, nil, nil, nil
 end
 
 -- Installation scheduling is irrelevant until an operation needs a queue.

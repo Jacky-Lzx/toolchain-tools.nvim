@@ -5,8 +5,9 @@ local options, registry
 local inflight = {}
 local activated = {}
 
-function M.setup(opts)
-  opts = opts or {}
+function M.resolve(opts)
+  assert(opts == nil or type(opts) == "table", "parsers must be a table")
+  opts = vim.deepcopy(opts or {})
   for key in pairs(opts) do
     assert(
       vim.list_contains({ "install_dir", "cache_dir", "sources", "query_source", "filetypes" }, key),
@@ -24,6 +25,16 @@ function M.setup(opts)
     assert(configured[key] ~= "", "Parser directories cannot be the filesystem root")
   end
   assert(type(configured.sources) == "table", "parsers.sources must be a language table")
+  require("toolchain.runtime").validate({ filetypes = configured.filetypes })
+  return configured
+end
+
+function M.reset()
+  options, registry = nil, nil
+end
+
+function M.setup(opts)
+  local configured = M.resolve(opts)
   require("toolchain.runtime").setup({ filetypes = configured.filetypes })
   options = configured
   registry = nil

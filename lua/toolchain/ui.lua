@@ -76,6 +76,7 @@ function M.open(plan)
   vim.wo[win].wrap = false
   view = { buf = buf, win = win, plan = plan, rows = {} }
   local group = vim.api.nvim_create_augroup("ToolchainView" .. buf, { clear = true })
+  view.group = group
   local function refresh()
     if view and view.buf == buf then
       local ok, err = pcall(render)
@@ -115,7 +116,7 @@ function M.open(plan)
       if view and view.buf == buf then
         view = nil
       end
-      vim.api.nvim_del_augroup_by_id(group)
+      pcall(vim.api.nvim_del_augroup_by_id, group)
     end,
   })
   local function map(key, fn)
@@ -158,6 +159,21 @@ function M.open(plan)
   end)
   render(entries)
   vim.api.nvim_win_set_cursor(win, { 4, 0 })
+end
+
+function M.dispose()
+  local old = view
+  view = nil
+  if old then
+    pcall(vim.api.nvim_del_augroup_by_id, old.group)
+    if
+      vim.api.nvim_win_is_valid(old.win)
+      and vim.api.nvim_win_get_buf(old.win) == old.buf
+      and not vim.bo[old.buf].modified
+    then
+      pcall(vim.api.nvim_win_close, old.win, false)
+    end
+  end
 end
 
 return M

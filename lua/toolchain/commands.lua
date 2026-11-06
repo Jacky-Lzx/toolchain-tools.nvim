@@ -139,4 +139,24 @@ function M.setup()
   end, { desc = "Open the persistent toolchain log" })
 end
 
+function M.dispose()
+  local commands = require("toolchain.user_command")
+  for _, name in ipairs({
+    "Toolchain",
+    "ToolchainPlan",
+    "ToolchainInstall",
+    "ToolchainUninstall",
+    "ToolchainLock",
+    "ToolchainVersions",
+    "ToolchainPrune",
+    "ToolchainRollback",
+    "ToolchainRefreshParsers",
+    "ToolchainRetry",
+    "ToolchainCancel",
+    "ToolchainLog",
+  }) do
+    commands.delete(name)
+  end
+end
+
 return M

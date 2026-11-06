@@ -87,6 +87,7 @@ t.test("ID selection resolves dynamic configuration once and rejects unknown IDs
   toolchain.install_ids({ "system:sh", "system:sh" })
   t.eq(count, 2)
   assert(not pcall(setup))
+  assert(not pcall(toolchain.dispose), "Disposal must retain an active installation queue")
   assert(toolchain.wait(1000))
   t.eq(#toolchain.status(), 1)
   vim.cmd("ToolchainInstall system:sh")

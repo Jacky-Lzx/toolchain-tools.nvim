@@ -25,7 +25,7 @@ local function kind_matches(match, predicate, any)
   return not any
 end
 
-function M.setup(opts)
+function M.validate(opts)
   opts = opts or {}
   assert(
     opts.filetypes == nil or opts.filetypes == false or type(opts.filetypes) == "table",
@@ -36,6 +36,12 @@ function M.setup(opts)
     assert(type(filetype) == "string" and filetype ~= "", "Invalid parser filetype")
     util.name(language)
   end
+end
+
+function M.setup(opts)
+  M.validate(opts)
+  opts = opts or {}
+  local overrides = opts.filetypes or {}
   if opts.filetypes ~= false then
     local aliases = assert(util.json(root .. "/data/filetypes.json"), "Cannot read parser filetype aliases").filetypes
     for filetype, language in pairs(aliases) do

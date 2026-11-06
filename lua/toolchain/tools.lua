@@ -24,8 +24,9 @@ local function canonical(value)
   return "{" .. table.concat(parts, ",") .. "}"
 end
 
-function M.setup(opts)
-  opts = opts or {}
+function M.resolve(opts)
+  assert(opts == nil or type(opts) == "table", "tools must be a table")
+  opts = vim.deepcopy(opts or {})
   for key in pairs(opts) do
     assert(vim.list_contains({ "install_dir", "sources", "path", "lockfile" }, key), "Unknown tools option: " .. key)
   end
@@ -44,7 +45,15 @@ function M.setup(opts)
   if new.lockfile then
     new.lockfile = vim.fs.normalize(vim.fn.fnamemodify(vim.fn.expand(new.lockfile), ":p"))
   end
-  options, registry = new, nil
+  return new
+end
+
+function M.reset()
+  options, registry = nil, nil
+end
+
+function M.setup(opts)
+  options, registry = M.resolve(opts), nil
 end
 
 local function settings()
