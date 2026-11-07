@@ -102,6 +102,11 @@ local function requirements(input)
   return config.normalize(input)
 end
 
+-- Inspection callers can avoid the setup-on-demand path.
+function M.configured()
+  return options ~= nil
+end
+
 -- Resolves local executables only: no backend modules, registries or downloads.
 function M.plan(input)
   ensure_setup()

@@ -523,3 +523,10 @@ closes the scheduling UI, removes owned commands and forgets scheduling options.
 Like setup, it rejects queued/running installations or active lock operations.
 It does not uninstall assets, remove PATH/runtimepath entries or clear session
 leases: already loaded parsers and running tools may still use those files.
+
+## Health and inspection
+
+Health reports actionable failures and a compact result for applicable checks. Disabled,
+optional and not-yet-activated features do not warn solely because they are inactive.
+Inspection does not configure plugins, start services or install dependencies.
+Use `:ToolchainPlan` for detailed configuration and runtime information.

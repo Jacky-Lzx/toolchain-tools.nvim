@@ -104,7 +104,7 @@ t.test("unavailable tools can be explicitly retried when they become available",
   t.eq(toolchain.status()[1].attempt, 3)
 end)
 
-t.test("health reports optional absence as information and required absence as a warning", function()
+t.test("health hides unused optional absence and warns for required absence", function()
   setup({
     { provider = "system", name = missing, optional = true },
     { provider = "system", name = missing .. "-required" },
@@ -126,11 +126,10 @@ t.test("health reports optional absence as information and required absence as a
       t.eq(message.level, "warn")
       required_warning = true
     elseif message.message:find(missing, 1, true) then
-      t.eq(message.level, "info")
       optional_info = true
     end
   end
-  assert(optional_info and required_warning)
+  assert(not optional_info and required_warning)
 end)
 
 t.test("optional flags are explicit booleans for system requirements", function()
