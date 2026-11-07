@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "default": [
+    "unit",
+    "ui"
+  ],
+  "defaults": {},
+  "cases": [
+    {
+      "name": "runner-contracts",
+      "suite": "unit",
+      "command": [
+        "{python}",
+        "tests/runner_checks.py"
+      ],
+      "files": [
+        "tests/runner_checks.py"
+      ],
+      "timeout": 120
+    },
+    {
+      "name": "setup_contract",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/setup_contract.lua"
+      ],
+      "files": [
+        "tests/setup_contract.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "command_ownership",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/command_ownership.lua"
+      ],
+      "files": [
+        "tests/command_ownership.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "core",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/core.lua"
+      ],
+      "files": [
+        "tests/core.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "api",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/api.lua"
+      ],
+      "files": [
+        "tests/api.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "backends",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/backends.lua"
+      ],
+      "files": [
+        "tests/backends.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "hooks",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/hooks.lua"
+      ],
+      "files": [
+        "tests/hooks.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "optional",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/optional.lua"
+      ],
+      "files": [
+        "tests/optional.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "health",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/health.lua"
+      ],
+      "files": [
+        "tests/health.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "runtime",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/runtime.lua"
+      ],
+      "files": [
+        "tests/runtime.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "tools",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/tools.lua"
+      ],
+      "files": [
+        "tests/tools.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "tool_downloads",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/tool_downloads.lua"
+      ],
+      "files": [
+        "tests/tool_downloads.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "tool_locks",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/tool_locks.lua"
+      ],
+      "files": [
+        "tests/tool_locks.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "tool_versions",
+      "suite": "unit",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/tool_versions.lua"
+      ],
+      "files": [
+        "tests/tool_versions.lua"
+      ],
+      "timeout": 90
+    },
+    {
+      "name": "tui",
+      "suite": "ui",
+      "command": [
+        "{python}",
+        "tests/tui.py"
+      ],
+      "files": [
+        "tests/tui.py"
+      ],
+      "timeout": 120
+    },
+    {
+      "name": "versions_tui",
+      "suite": "ui",
+      "command": [
+        "{python}",
+        "tests/versions_tui.py"
+      ],
+      "files": [
+        "tests/versions_tui.py"
+      ],
+      "timeout": 120
+    },
+    {
+      "name": "parsers",
+      "suite": "parsers",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/parsers.lua"
+      ],
+      "files": [
+        "tests/parsers.lua"
+      ],
+      "timeout": 90,
+      "requires": [
+        "exe:tree-sitter",
+        "exe:cc"
+      ]
+    },
+    {
+      "name": "clean_tools",
+      "suite": "acceptance-tools",
+      "command": [
+        "{python}",
+        "tests/clean_tools.py"
+      ],
+      "files": [
+        "tests/clean_tools.py"
+      ],
+      "timeout": 1200
+    },
+    {
+      "name": "integration",
+      "suite": "compatibility",
+      "command": [
+        "{nvim}",
+        "--headless",
+        "-n",
+        "-u",
+        "NONE",
+        "-i",
+        "NONE",
+        "--noplugin",
+        "-l",
+        "tests/integration.lua"
+      ],
+      "files": [
+        "tests/integration.lua"
+      ],
+      "timeout": 90,
+      "requires": [
+        "env:TOOLCHAIN_MASON_ROOT",
+        "env:TOOLCHAIN_TREESITTER_ROOT",
+        "path:$TOOLCHAIN_MASON_ROOT/lua/mason/init.lua",
+        "path:$TOOLCHAIN_TREESITTER_ROOT/lua/nvim-treesitter/init.lua",
+        "exe:tree-sitter"
+      ]
+    },
+    {
+      "name": "clean_protocols",
+      "suite": "acceptance",
+      "command": [
+        "{python}",
+        "tests/clean_protocols.py"
+      ],
+      "files": [
+        "tests/clean_protocols.py"
+      ],
+      "timeout": 1200
+    }
+  ],
+  "support": {
+    "tests/tool-fixture.sh": "Loaded by tests/tool_versions.lua",
+    "tests/clean_protocols.lua": "Loaded by tests/clean_protocols.py",
+    "tests/clean_tools.lua": "Loaded by tests/clean_tools.py",
+    "tests/tui.lua": "Loaded by tests/tui.py",
+    "tests/tool_protocols.py": "Loaded by tests/clean_protocols.py",
+    "tests/helpers.lua": "Loaded by tests/optional.lua",
+    "tests/lease_holder.lua": "Loaded by tests/tool_versions.lua",
+    "tests/versions_tui.lua": "Loaded by tests/versions_tui.py",
+    "tests/fixtures/lua/toolchain-test-registry/index.lua": "Fixture used by protocol or editor scenarios",
+    "tests/fixtures/lua/toolchain-test-registry/package.lua": "Fixture used by protocol or editor scenarios",
+    "tests/run.sh": "Stable shell entry point for tests/run.py"
+  },
+  "manual": {
+    "tests/installed_tools.py": "Explicit existing-store acceptance; requires --store PATH and optional --java-home PATH"
+  },
+  "aliases": {
+    "--integration": "unit,ui,parsers,compatibility",
+    "--parsers": "unit,ui,parsers",
+    "--tools": "unit,ui,acceptance-tools"
+  }
+}

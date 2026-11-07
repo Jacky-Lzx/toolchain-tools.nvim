@@ -19,7 +19,13 @@ jobs:
         with:
           version: ${{ matrix.neovim }}
           neovim: true
-      - run: sh tests/run.sh
+      - run: sh tests/run.sh --output "$RUNNER_TEMP/test-results"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/test-results
+          if-no-files-found: ignore
   format:
     runs-on: ubuntu-latest
     steps:
@@ -39,7 +45,13 @@ jobs:
           neovim: true
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo install tree-sitter-cli --version 0.27.1 --locked
-      - run: sh tests/run.sh --parsers
+      - run: sh tests/run.sh --parsers --output "$RUNNER_TEMP/parser-test-results"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: parser-test-results-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/parser-test-results
+          if-no-files-found: ignore
   clean-tools:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
