@@ -448,3 +448,14 @@ docker run --rm --cpus=2 --memory=1g --pids-limit=256 \
 
 The checkout is mounted read-only. All tool stores and caches are disposable;
 the offline suite uses loopback fixture registries with external networking disabled.
+
+## Package resources and npm compatibility
+
+`require("toolchain.resources").resolve(package, resource)` first checks a
+registry-declared external npm package layout, then the managed resource path.
+It does not install tools, activate PATH, or initialize a UI. `npm_package(exe,
+package)` is also available for read-only package-root discovery.
+Npm recipes may declare exact-version `overrides`. They are written into the
+managed package manifest before npm install/ci and preserved with the recipe in
+receipts and toolchain locks. The Vue recipe uses the same TypeScript version as
+its pinned extra dependency, preventing an incompatible nested major version.

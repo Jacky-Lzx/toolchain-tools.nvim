@@ -65,19 +65,28 @@ end
 
 function M.definition(package_name, unlocked)
   name(package_name)
+  local config = settings()
   if not registry then
     registry = assert(util.json(plugin .. "/data/tools.json"), "Cannot read bundled tool registry").packages
-    for key, entry in pairs(settings().sources) do
+    for key, entry in pairs(config.sources) do
       name(key)
       registry[key] = vim.deepcopy(entry)
     end
   end
-  local entry = settings().lockfile
-      and not unlocked
-      and require("toolchain.tool_lock").entry(settings().lockfile, package_name)
+  local entry = config.lockfile and not unlocked and require("toolchain.tool_lock").entry(config.lockfile, package_name)
     or vim.deepcopy(assert(registry[package_name], "Unknown independent tool: " .. package_name))
   assert(type(entry) == "table" and type(entry.kind) == "string", "Invalid tool recipe: " .. package_name)
   assert(type(entry.version) == "string" and entry.version ~= "", "Tool version must be pinned")
+  if entry.overrides ~= nil then
+    assert(entry.kind == "npm" and type(entry.overrides) == "table", "npm overrides must be a package table")
+    for package, version in pairs(entry.overrides) do
+      assert(type(package) == "string" and package:match("^[%w@_./%-]+$"), "Invalid npm override package")
+      assert(
+        type(version) == "string" and version:match("^%d+%.%d+%.%d+[%w.%-]*$"),
+        "npm overrides require exact versions"
+      )
+    end
+  end
   if entry.kind == "download" then
     entry.bin = require("toolchain.tool_installers").asset(entry).bin
   end

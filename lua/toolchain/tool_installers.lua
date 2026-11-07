@@ -111,7 +111,13 @@ local function npm(entry, root, log, previous)
   end
   util.write_json(
     root .. "/package.json",
-    { name = "toolchain-managed-tool", version = "1.0.0", private = true, dependencies = dependencies }
+    {
+      name = "toolchain-managed-tool",
+      version = "1.0.0",
+      private = true,
+      dependencies = dependencies,
+      overrides = entry.overrides,
+    }
   )
   local old = require("toolchain.tool_lock").file(entry, "package-lock.json")
     or previous_lock(previous, "package-lock.json")

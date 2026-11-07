@@ -46,6 +46,11 @@ def convert(entry):
         result.update(kind='npm', package=package, extras=source.get('extra_packages', []))
         # Pin upstream's unversioned Vue plugin to the matching language-tools release.
         result['extras'] = [f'{v}@{version}' if v == '@vue/typescript-plugin' else v for v in result['extras']]
+        if package == '@vue/language-server':
+            pinned = next(v.split('@')[-1] for v in result['extras'] if v.startswith('typescript@'))
+            result['overrides'] = {'typescript': pinned}
+            result['external_resources'] = {'server': {'executable': 'vue-language-server', 'package': package}}
+
         if entry['name'] == 'vue-language-server':
             result['resources'] = {'server': 'node_modules/@vue/language-server'}
     elif scheme == 'pkg:pypi':
