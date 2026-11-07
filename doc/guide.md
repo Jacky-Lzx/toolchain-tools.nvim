@@ -41,8 +41,10 @@ them. `:Toolchain` opens the live task window.
 ## Independent tool backend
 
 The `tool` provider installs into its own versioned store without Mason APIs.
-The bundled registry covers the 37 packages declared by the current language
-profiles. Recipes can also be supplied through `tools.sources`. Supported installers
+The bundled registry covers the 38 packages declared by the current language
+profiles, including checksum-pinned LTeX+ releases with bundled Java. Curated
+additions live in `data/tool-additions.json` and are merged by the offline registry
+importer, so refreshing the upstream snapshot retains them. Recipes can also be supplied through `tools.sources`. Supported installers
 are pinned release downloads (tar/zip/gzip/raw), isolated npm prefixes, Python
 virtual environments, Cargo Git tags, and pinned npm source builds. The initial
 platforms are macOS and Linux on x86-64/ARM64, subject to upstream asset availability.

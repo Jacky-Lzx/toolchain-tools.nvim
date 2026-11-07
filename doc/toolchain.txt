@@ -215,7 +215,10 @@ sources.
 INDEPENDENT TOOLS                                      *toolchain-tools-store*
 
 The tool provider uses pinned recipes in data/tools.json; tools.sources can
-replace or add definitions. Tools support release downloads, isolated npm
+replace or add definitions. The registry includes LTeX+ with bundled Java and
+checksum-pinned macOS/Linux x86-64/ARM64 releases. Curated additions in
+data/tool-additions.json survive offline registry imports.
+Tools support release downloads, isolated npm
 prefixes, Python virtual environments, Cargo Git tags and npm source builds.
 No Mason modules are required. macOS/Linux x86-64 and ARM64 are supported when
 upstream artifacts exist. Install at permanent version paths to preserve

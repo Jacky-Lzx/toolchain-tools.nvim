@@ -134,10 +134,12 @@ def main():
     parser.add_argument('--output', type=Path, default=Path('data/tools.json'))
     args = parser.parse_args()
     existing = json.loads(args.output.read_text())
-    names = set(existing['packages'])
+    additions = json.loads((Path(__file__).resolve().parents[1] / 'data/tool-additions.json').read_text())
+    names = set(existing['packages']) - set(additions)
     source = json.loads(args.registry.read_text())
     packages = {v['name']: convert(v) for v in source if v['name'] in names}
     assert names == set(packages), names - set(packages)
+    packages.update(additions)
     info = json.loads(args.info.read_text())
     value = {'schema': 1, 'upstream': {'repository': 'https://github.com/mason-org/mason-registry',
              'version': info['version'], 'sha256': hashlib.sha256(args.registry.read_bytes()).hexdigest()},

@@ -58,7 +58,7 @@ end)
 
 t.test("all bundled recipes normalize on macOS and Linux without templates or Mason", function()
   local registry = assert(util.json("data/tools.json"))
-  t.eq(vim.tbl_count(registry.packages), 37)
+  t.eq(vim.tbl_count(registry.packages), 38)
   local original = vim.uv.os_uname
   for _, platform in ipairs({
     { "Darwin", "arm64" },
@@ -82,6 +82,29 @@ t.test("all bundled recipes normalize on macOS and Linux without templates or Ma
   end
   vim.uv.os_uname = original
   assert(not package.loaded.mason and not package.loaded["mason-registry"])
+end)
+
+t.test("offline registry imports preserve curated release recipes", function()
+  local output, source, info = temp .. "/registry.json", temp .. "/source.json", temp .. "/info.json"
+  vim.fn.writefile({ vim.json.encode({ packages = { fixture = {} } }) }, output)
+  vim.fn.writefile(
+    {
+      vim.json.encode({
+        { name = "fixture", source = { id = "pkg:npm/fixture@1.0.0" }, bin = { fixture = "npm:fixture" } },
+      }),
+    },
+    source
+  )
+  vim.fn.writefile({ '{"version":"fixture"}' }, info)
+  local result = vim
+    .system({ "python3", "scripts/import-tools.py", source, "--info", info, "--output", output }, { text = true })
+    :wait()
+  assert(result.code == 0, result.stderr)
+  local imported = assert(util.json(output)).packages
+  local additions = assert(util.json("data/tool-additions.json"))
+  t.eq(imported["ltex-ls-plus"], additions["ltex-ls-plus"])
+  t.eq(assert(util.json("data/tools.json")).packages["ltex-ls-plus"], additions["ltex-ls-plus"])
+  t.eq(imported.fixture.version, "1.0.0")
 end)
 
 t.done()

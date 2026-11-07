@@ -17,3 +17,7 @@ The compiled registry SHA-256 is recorded in the data file. `scripts/import-tool
 reimports only the explicitly supported package names from a supplied registry
 snapshot; it is not called at runtime. Floating Vue extras and Lombok downloads
 are pinned explicitly. Each installed tool retains its upstream package license.
+
+`data/tool-additions.json` contains independently curated official-release recipes,
+currently LTeX+ 18.7.0 with bundled Java and SHA-256 pins for four platforms.
+The importer merges these into `data/tools.json` after upstream normalization.
