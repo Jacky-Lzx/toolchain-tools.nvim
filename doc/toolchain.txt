@@ -1,41 +1,107 @@
-*toolchain.txt*       Unified development dependency installation
+*toolchain.txt*	Explicit tool and Tree-sitter parser installation with a shared task queue.
 
-Requires Neovim 0.11+. Independent parser backend: Git, Tree-sitter CLI and a C
-compiler on macOS/Linux. Mason needs mason.nvim v2; the legacy treesitter adapter
-needs nvim-treesitter main. See README.md for complete examples.
+==============================================================================
+CONTENTS                                                     *toolchain-tools*
+                                                                   *toolchain*
 
-COMMANDS                                                   *toolchain-commands*
+  Quick start         |toolchain-tools-quickstart|
+  Commands            |toolchain-tools-commands|
+  Options             |toolchain-tools-options|
+  Lua API             |toolchain-tools-api|
+  Lifecycle           |toolchain-tools-lifecycle|
+  Troubleshooting     |toolchain-tools-troubleshooting|
 
-:Toolchain                                                    *:Toolchain*
+==============================================================================
+QUICK START                                       *toolchain-tools-quickstart*
+
+Requires Neovim 0.11+. Parser builds require Git, the Tree-sitter CLI and a C
+compiler. Tool recipes use platform download/archive utilities and their
+package managers. Mason and nvim-treesitter adapters are optional.
+
+>lua
+    require("toolchain").setup({ requirements = { { provider = "system", name = "git" } } })
+<
+
+The example above selects a small working setup. Full defaults, options and
+feature contracts are documented in this reference. Public installation and
+package-manager examples are in README.md.
+
+==============================================================================
+TROUBLESHOOTING                              *toolchain-tools-troubleshooting*
+
+Check the minimum Neovim version and feature dependencies first. Run
+:checkhealth toolchain to inspect availability. Global mappings shown in the
+README are configuration examples unless explicitly documented as plugin
+defaults. Keep one owner for each overridden UI or mapping.
+
+==============================================================================
+COMMANDS                                            *toolchain-tools-commands*
+
+:ToolchainPlan
+:ToolchainInstall
+:Toolchain
+
+See the workflow guide for usage examples and the detailed reference below for
+arguments and feature-specific commands.
+
+==============================================================================
+OPTIONS                                              *toolchain-tools-options*
+
+Options are passed to require("toolchain").setup(opts). The quick start is an
+example, not a dump of defaults. Detailed configuration and examples follow
+below.
+
+==============================================================================
+LUA API                                                  *toolchain-tools-api*
+
+The public entry module is "toolchain". See the function signatures and
+contracts in the detailed reference below. Configuration owns personal global
+mappings.
+
+Requires Neovim 0.11+. Independent parser backend: Git, Tree-sitter CLI and a
+C compiler on macOS/Linux. Mason needs mason.nvim v2; the legacy treesitter
+adapter needs nvim-treesitter main. See README.md for complete examples.
+
+COMMANDS                                                  *toolchain-commands*
+
+:Toolchain                                                        *:Toolchain*
     Open the live installation task window.
 :ToolchainPlan                                                *:ToolchainPlan*
     Inspect configured requirements. No registry refreshes or downloads.
-:ToolchainInstall [provider:name ...]                          *:ToolchainInstall*
+:ToolchainInstall [provider:name ...]                      *:ToolchainInstall*
     Queue all configured requirements or selected IDs asynchronously.
-:ToolchainRetry [provider:name ...]                            *:ToolchainRetry*
-    Retry failed, unavailable, or cancelled tasks with their original declarations.
-:ToolchainCancel provider:name                                *:ToolchainCancel*
+:ToolchainRetry [provider:name ...]                          *:ToolchainRetry*
+    Retry failed, unavailable, or cancelled tasks with their original
+        declarations.
+:ToolchainCancel provider:name                              *:ToolchainCancel*
     Cancel a queued task. Running tasks cannot be cancelled.
-:ToolchainLog                                                 *:ToolchainLog*
+:ToolchainLog                                                  *:ToolchainLog*
     Open a read-only snapshot of the persistent JSON-lines log.
 :ToolchainLock[!] [file]                                      *:ToolchainLock*
-    Export a portable tool lock. ! explicitly resolves configured managed tools
-    first, including managed copies of system-provided tools. Ordinary installs
-    use tools.lockfile without rewriting it; export failure retains the old file.
+    Export a portable tool lock. ! explicitly resolves configured managed
+        tools
+    first, including managed copies of system-provided tools. Ordinary
+        installs
+    use tools.lockfile without rewriting it; export failure retains the old
+        file.
 :ToolchainVersions [tool:<package>]                       *:ToolchainVersions*
     List immutable version IDs, current selection and protection reasons.
-:ToolchainRollback tool:<package> <version-id>             *:ToolchainRollback*
-    Validate an existing version and atomically select it without changing locks.
+:ToolchainRollback tool:<package> <version-id>            *:ToolchainRollback*
+    Validate an existing version and atomically select it without changing
+        locks.
 :ToolchainPrune [tool:<package>]                             *:ToolchainPrune*
     Preview cleanup candidates only. No version files are deleted.
 :ToolchainUninstall tool:<package>
-    Remove an independent tool activation pointer and PATH entry, retaining its
+    Remove an independent tool activation pointer and PATH entry, retaining
+        its
     version files for already running processes.
-:ToolchainRefreshParsers                              *:ToolchainRefreshParsers*
+:ToolchainRefreshParsers                            *:ToolchainRefreshParsers*
     Refresh parser activation metadata under per-language locks. Selected
-    versions and version contents are unchanged. New installs include metadata.
+    versions and version contents are unchanged. New installs include
+        metadata.
     Setup uses receipt size/mtime to avoid decoding unchanged receipts; old or
-    stale descriptors fall back to receipt JSON. Full info/install checks remain.
+    stale descriptors fall back to receipt JSON. Full info/install checks
+        remain.
 :checkhealth toolchain
     Validate declarations and report backend availability without installing.
 
@@ -54,31 +120,35 @@ SETUP                                                        *toolchain-setup*
       },
     })
 <
-The independent tool backend appends installed version bin directories to PATH;
-set tools.path = 'skip' to disable this. The optional Mason compatibility backend
-requires Mason setup separately and does not change its settings. Requirements
-may also be a read-only function returning a list. Each entry has provider/name, plus optional executable, resolve (returns
-an executable path or nil), and a managed-tool post-install hook. Choose one:
-post_install(package) for synchronous hooks, or
-post_install_async(package, done, log) for asynchronous hooks. Call done() after
-success, or done(error) after failure. log(output) adds child output to task logs.
+The independent tool backend appends installed version bin directories to
+PATH; set tools.path = 'skip' to disable this. The optional Mason
+compatibility backend requires Mason setup separately and does not change its
+settings. Requirements may also be a read-only function returning a list. Each
+entry has provider/name, plus optional executable, resolve (returns an
+executable path or nil), and a managed-tool post-install hook. Choose one:
+post_install(package) for synchronous hooks, or post_install_async(package,
+done, log) for asynchronous hooks. Call done() after success, or done(error)
+after failure. log(output) adds child output to task logs.
 
 Async hooks retain the queue slot until their callback runs, including for an
-already-installed Mason package; independent intact versions skip their hooks. Repeated completion callbacks are ignored. They have
-no implicit timeout: wait(timeout) returns control but does not stop the hook.
-An existing helper that starts a process and returns must be adapted to call done;
-merely leaving it in post_install still treats its return as completion.
+already-installed Mason package; independent intact versions skip their hooks.
+Repeated completion callbacks are ignored. They have no implicit timeout:
+wait(timeout) returns control but does not stop the hook. An existing helper
+that starts a process and returns must be adapted to call done; merely leaving
+it in post_install still treats its return as completion.
 
-Other options: max_log_lines = 200 (bounded output chunks per task), notify = true
-(failure notifications), log_file = stdpath('state') .. '/toolchain-tools.log'
-(false disables persistence). Setup and require never start installations.
+Other options: max_log_lines = 200 (bounded output chunks per task), notify =
+true (failure notifications), log_file = stdpath('state') ..
+'/toolchain-tools.log' (false disables persistence). Setup and require never
+start installations.
 
 System requirements accept optional = true (default false). An absent optional
-executable is unavailable, not failed; health reports it as information. Resolver
-errors still fail. Retry rechecks unavailable tools after external installation.
-Optional flags do not suppress Mason/parser installation or hook failures.
+executable is unavailable, not failed; health reports it as information.
+Resolver errors still fail. Retry rechecks unavailable tools after external
+installation. Optional flags do not suppress Mason/parser installation or hook
+failures.
 
-API                                                          *toolchain-api*
+API                                                            *toolchain-api*
 >lua
     local tc = require('toolchain')
     tc.plan()                    -- local checks; optional requirement list
@@ -95,113 +165,214 @@ wait() needs a finite timeout in milliseconds. Completion includes failed and
 cancelled tasks: check for installed/skipped/unavailable to accept completion
 without required dependency failures.
 
-Task IDs are provider:name. Active identical declarations share one task.
-Plan states: available, check (deferred backend check), missing (system),
-unavailable (optional system), failed.
-Task states: queued, running, installed, skipped, unavailable, failed, cancelled.
+Task IDs are provider:name. Active identical declarations share one task. Plan
+states: available, check (deferred backend check), missing (system),
+unavailable (optional system), failed. Task states: queued, running,
+installed, skipped, unavailable, failed, cancelled.
 
 User ToolchainUpdated fires for transitions/output; event.data contains id,
-state, attempt, optional, message. Call status() to refresh custom UI integrations.
+state, attempt, optional, message. Call status() to refresh custom UI
+integrations.
 
-BOUNDARIES                                                   *toolchain-boundaries*
+BOUNDARIES                                              *toolchain-boundaries*
 
 Concurrency limits submitted tasks, not every process inside an upstream
 installer. Only queued tasks can be cancelled. Existing system/Nix executables
-satisfy managed-tool requirements without installation or post_install hooks. Executables
-inside Mason's install root still receive Mason package checks and hooks.
+satisfy managed-tool requirements without installation or post_install hooks.
+Executables inside Mason's install root still receive Mason package checks and
+hooks.
 
-Logs contain lifecycle events, independent tool/parser build output and Mason output;
-legacy treesitter adapter details stay in :TSLog. Persistent logs are append-only.
-Task history lasts one session.
-setup() resets history and is rejected while tasks are queued or running.
+Logs contain lifecycle events, independent tool/parser build output and Mason
+output; legacy treesitter adapter details stay in :TSLog. Persistent logs are
+append-only. Task history lasts one session. setup() resets history and is
+rejected while tasks are queued or running.
 
 Independent parser sources and queries use pinned commit SHAs. Installation
 builds and validates a complete version, then atomically changes its current
 pointer. Failed builds preserve the previous version. Repeated installation
-checks file hashes and repairs damaged artifacts. Shared-query dependencies are
-installed first. Sources are cached; git/build output is captured in task logs.
+checks file hashes and repairs damaged artifacts. Shared-query dependencies
+are installed first. Sources are cached; git/build output is captured in task
+logs.
 
-Setup activates immutable runtime paths once per language. Restart Neovim after
-installation to activate new versions. Old versions and site/parser installations
-are retained for existing sessions and migration. nvim-treesitter is not required
-by this backend; its pinned query collection is still used as data.
+Setup activates immutable runtime paths once per language. Restart Neovim
+after installation to activate new versions. Old versions and site/parser
+installations are retained for existing sessions and migration.
+nvim-treesitter is not required by this backend; its pinned query collection
+is still used as data.
 
 Setup registers parser filetype aliases and compatible kind-eq?/any-kind-eq?
 predicates without replacing existing providers or custom language mappings.
-Override aliases with parsers.filetypes = { tex = 'my_latex' }; false skips defaults.
+Override aliases with parsers.filetypes = { tex = 'my_latex' }; false skips
+defaults.
 
-Configure parsers.install_dir, parsers.cache_dir, parsers.sources (per-language
-overrides), parsers.filetypes and parsers.query_source. See README.md for the source schema. Inspect
+Configure parsers.install_dir, parsers.cache_dir, parsers.sources
+(per-language overrides), parsers.filetypes and parsers.query_source. See
+README.md for the source schema. Inspect
 require('toolchain.parsers').info(language) for receipts and integrity. Parser
-uninstall and version pruning are not implemented; updates follow pinned sources.
+uninstall and version pruning are not implemented; updates follow pinned
+sources.
 
-INDEPENDENT TOOLS                                        *toolchain-tools-store*
+INDEPENDENT TOOLS                                      *toolchain-tools-store*
 
 The tool provider uses pinned recipes in data/tools.json; tools.sources can
 replace or add definitions. Tools support release downloads, isolated npm
 prefixes, Python virtual environments, Cargo Git tags and npm source builds.
 No Mason modules are required. macOS/Linux x86-64 and ARM64 are supported when
-upstream artifacts exist. Install at permanent version paths to preserve Python
-shebangs, then atomically publish a current pointer. Failure retains the old
-version. Explicit installation checks integrity and repairs modified artifacts.
-New npm/Python installs record resolved dependency locks; repairs reuse intact
-locks. Initial transitive dependency resolution is not globally locked.
+upstream artifacts exist. Install at permanent version paths to preserve
+Python shebangs, then atomically publish a current pointer. Failure retains
+the old version. Explicit installation checks integrity and repairs modified
+artifacts. New npm/Python installs record resolved dependency locks; repairs
+reuse intact locks. Initial transitive dependency resolution is not globally
+locked.
 
-require('toolchain.tools').executable(package, command) returns a managed wrapper.
-.path(package, resource) returns a declared resource (omit resource for root).
-.info(package) reports the current root, receipt and artifact integrity.
-.remove(package) removes activation only, preserving files for live processes.
-Tool hooks receive { name, path, version, resources } before publication; intact
-versions skip hooks. Use ToolchainInstall after updating the pinned recipe.
-Restart existing clients after installing a new tool version.
+require('toolchain.tools').executable(package, command) returns a managed
+wrapper. .path(package, resource) returns a declared resource (omit resource
+for root). .info(package) reports the current root, receipt and artifact
+integrity. .remove(package) removes activation only, preserving files for live
+processes. Tool hooks receive { name, path, version, resources } before
+publication; intact versions skip hooks. Use ToolchainInstall after updating
+the pinned recipe. Restart existing clients after installing a new tool
+version.
 
-PROJECT TOOL LOCKS                                          *toolchain-locks*
+PROJECT TOOL LOCKS                                           *toolchain-locks*
 
-Set tools.lockfile to a configuration-owned JSON path (default false). Export an
-initial snapshot with ToolchainLock!, then commit it. Each platform records full
-recipes, release SHA-256 digests, npm/Python dependencies and Cargo commit SHAs.
-Missing platform/package entries fail explicit managed installation; setup and
-plans remain offline. Ordinary installs retain system/Nix executable priority.
-Python requires the recorded interpreter major/minor version. System tools and
-host runtimes remain external prerequisites; custom hooks must be deterministic.
+Set tools.lockfile to a configuration-owned JSON path (default false). Export
+an initial snapshot with ToolchainLock!, then commit it. Each platform records
+full recipes, release SHA-256 digests, npm/Python dependencies and Cargo
+commit SHAs. Missing platform/package entries fail explicit managed
+installation; setup and plans remain offline. Ordinary installs retain
+system/Nix executable priority. Python requires the recorded interpreter
+major/minor version. System tools and host runtimes remain external
+prerequisites; custom hooks must be deterministic.
 
-ToolchainLock exports existing verified managed versions. ToolchainLock! resolves
-current bundled/custom recipes and writes only after every selected task succeeds.
-Other platform entries are preserved. Both replacement and export merges are
-atomic/serialized; source override changes do not bypass a configured frozen lock.
+ToolchainLock exports existing verified managed versions. ToolchainLock!
+resolves current bundled/custom recipes and writes only after every selected
+task succeeds. Other platform entries are preserved. Both replacement and
+export merges are atomic/serialized; source override changes do not bypass a
+configured frozen lock.
 
 require('toolchain').lock(path, update) uses the same path and update policy.
-.lock_status() reports resolving/writing/written/failed; wait() includes export.
-User ToolchainLockWritten carries data.path only after a successful write.
+.lock_status() reports resolving/writing/written/failed; wait() includes
+export. User ToolchainLockWritten carries data.path only after a successful
+write.
 
-TOOL VERSION MANAGEMENT                                  *toolchain-versions*
+TOOL VERSION MANAGEMENT                                   *toolchain-versions*
 
-versions(name) and prune_plan(name) on require('toolchain.tools') return records
-with id/version/current/recorded/compatible/protected/reasons/candidate/root.
-Rollback(name, id) verifies artifacts and selects a recorded immutable version.
-Use .rollback in Lua (lowercase). Listing alone does not imply integrity.
+versions(name) and prune_plan(name) on require('toolchain.tools') return
+records with
+id/version/current/recorded/compatible/protected/reasons/candidate/root.
+Rollback(name, id) verifies artifacts and selects a recorded immutable
+version. Use .rollback in Lua (lowercase). Listing alone does not imply
+integrity.
 
-Setup/activation records current roots in a per-editor session lease; every root
-activated during that editor session remains protected until exit. Dead owners
-no longer protect roots; corrupt/unknown session records conservatively protect
-all retired versions. Active writers also protect their versions. Session
-metadata may be written for existing stores; setup never installs packages.
+Setup/activation records current roots in a per-editor session lease; every
+root activated during that editor session remains protected until exit. Dead
+owners no longer protect roots; corrupt/unknown session records conservatively
+protect all retired versions. Active writers also protect their versions.
+Session metadata may be written for existing stores; setup never installs
+packages.
 
 ToolchainPrune is read-only, including for candidates. External programs and
-older editor sessions are not tracked, and no version files are deleted. Restart
-clients to use a newly selected version. Rollback leaves the project lock intact;
-ordinary install follows the frozen recipe again. q closes version reports.
+older editor sessions are not tracked, and no version files are deleted.
+Restart clients to use a newly selected version. Rollback leaves the project
+lock intact; ordinary install follows the frozen recipe again. q closes
+version reports.
 
-VALIDATION                                                *toolchain-validation*
+VALIDATION                                              *toolchain-validation*
 
-sh tests/run.sh --tools runs isolated registry/dependency replay tests, alongside
-core and PTY workflows. It requires Node/npm and Python with venv/pip; registries
-are local fixtures. python3 tests/clean_protocols.py downloads real LuaLS/debugpy
-into empty stores, exports/replays a lock with fresh caches and exercises actual
-LSP initialization and a DAP launch/stop. No legacy plugin checkout is required.
+sh tests/run.sh --tools runs isolated registry/dependency replay tests,
+alongside core and PTY workflows. It requires Node/npm and Python with
+venv/pip; registries are local fixtures. python3 tests/clean_protocols.py
+downloads real LuaLS/debugpy into empty stores, exports/replays a lock with
+fresh caches and exercises actual LSP initialization and a DAP launch/stop. No
+legacy plugin checkout is required.
 
-CI covers Linux Neovim 0.11.5/stable/nightly and macOS stable; cold tool/protocol
-tests run on both operating systems. See README.md for Docker reproduction and
-host prerequisites. The lock records dependencies, not host-runtime installers.
+CI covers Linux Neovim 0.11.5/stable/nightly and macOS stable; cold
+tool/protocol tests run on both operating systems. See README.md for Docker
+reproduction and host prerequisites. The lock records dependencies, not
+host-runtime installers.
 
- vim:tw=78:ts=8:noet:ft=help:norl:
+==============================================================================
+LUA API AND CONFIGURATION *toolchain-tools-reference-lua-api-and-configuration*
+
+>lua
+    require("toolchain").setup({
+      requirements = {}, -- list or function returning a list
+      concurrency = 2,
+      max_log_lines = 200, -- retained output chunks per task, each capped at 8 KiB
+      log_file = vim.fn.stdpath("state") .. "/toolchain-tools.log", -- false disables persistence
+      notify = true, -- notify on task failures
+    })
+
+    local tc = require("toolchain")
+    local plan = tc.plan() -- or tc.plan(requirements)
+    local ids = tc.install() -- or tc.install(requirements)
+    tc.install_ids({ "tool:stylua" })
+    local tasks = tc.status() -- independent snapshots, including logs and attempt numbers
+    local finished, final_tasks = tc.wait(300000)
+    tc.retry() -- failed, unavailable, cancelled; or tc.retry({ "tool:stylua" })
+    local cancelled, reason = tc.cancel("tool:stylua")
+    tc.open()
+<
+
+`install()` is asynchronous. `wait(timeout_ms)` reports whether the queue has
+finished, including failed/cancelled/unavailable tasks; it does not imply
+success. A timeout does not stop installers. To bootstrap in a script, inspect
+the final states:
+
+>lua
+    tc.install()
+    local finished, tasks = tc.wait(300000)
+    assert(finished, "Installation timed out")
+    for _, task in ipairs(tasks) do
+      assert(task.state == "installed" or task.state == "skipped"
+        or task.state == "unavailable", task.id .. ": " .. task.message)
+    end
+<
+
+`setup()` replaces options and session task history, and is rejected while
+work is queued/running. Requiring the module alone registers nothing. Setup
+registers commands, but does not start installers or register buffer
+highlighting hooks.
+
+Each task transition/output chunk emits `User ToolchainUpdated` with
+`event.data = { id, state, attempt, optional, message }`. UI integrations can
+read `tc.status()`; consuming the event does not require the built-in window.
+
+==============================================================================
+COMMAND OWNERSHIP                *toolchain-tools-reference-command-ownership*
+
+Commands belong to the plugin; choose global entry keys and short aliases in
+your configuration. Registration reports same-name conflicts without replacing
+user commands. Reconfiguration refreshes only commands still owned by this
+plugin, and cleanup preserves subsequent user replacements.
+
+==============================================================================
+SETUP CONTRACT                                     *toolchain-tools-lifecycle*
+                                    *toolchain-tools-reference-setup-contract*
+
+`setup(nil)` uses defaults. Configuration must be a table; caller-owned tables
+are copied before use. Invalid configuration types do not replace live
+handlers or commands. Repeating setup must not accumulate automatic
+registrations.
+
+Parser and tool options are both validated before activation changes.
+`dispose()` closes the scheduling UI, removes owned commands and forgets
+scheduling options. Like setup, it rejects queued/running installations or
+active lock operations. It does not uninstall assets, remove PATH/runtimepath
+entries or clear session leases: already loaded parsers and running tools may
+still use those files.
+
+==============================================================================
+HEALTH AND INSPECTION        *toolchain-tools-reference-health-and-inspection*
+
+Health reports actionable failures and a compact result for applicable checks.
+Disabled, optional and not-yet-activated features do not warn solely because
+they are inactive. Inspection does not configure plugins, start services or
+install dependencies. Use `:ToolchainPlan` for detailed configuration and
+runtime information.
+
+Test workflow (tests/README.md): registered suites, filtering, required
+fixtures and retained failure evidence.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
