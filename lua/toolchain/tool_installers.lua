@@ -109,16 +109,13 @@ local function npm(entry, root, log, previous)
     assert(package and version and version ~= "latest", "Extra npm packages must have a pinned version")
     dependencies[package] = version
   end
-  util.write_json(
-    root .. "/package.json",
-    {
-      name = "toolchain-managed-tool",
-      version = "1.0.0",
-      private = true,
-      dependencies = dependencies,
-      overrides = entry.overrides,
-    }
-  )
+  util.write_json(root .. "/package.json", {
+    name = "toolchain-managed-tool",
+    version = "1.0.0",
+    private = true,
+    dependencies = dependencies,
+    overrides = entry.overrides,
+  })
   local old = require("toolchain.tool_lock").file(entry, "package-lock.json")
     or previous_lock(previous, "package-lock.json")
   if old then

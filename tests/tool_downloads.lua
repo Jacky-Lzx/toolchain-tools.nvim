@@ -87,14 +87,11 @@ end)
 t.test("offline registry imports preserve curated release recipes", function()
   local output, source, info = temp .. "/registry.json", temp .. "/source.json", temp .. "/info.json"
   vim.fn.writefile({ vim.json.encode({ packages = { fixture = {} } }) }, output)
-  vim.fn.writefile(
-    {
-      vim.json.encode({
-        { name = "fixture", source = { id = "pkg:npm/fixture@1.0.0" }, bin = { fixture = "npm:fixture" } },
-      }),
-    },
-    source
-  )
+  vim.fn.writefile({
+    vim.json.encode({
+      { name = "fixture", source = { id = "pkg:npm/fixture@1.0.0" }, bin = { fixture = "npm:fixture" } },
+    }),
+  }, source)
   vim.fn.writefile({ '{"version":"fixture"}' }, info)
   local result = vim
     .system({ "python3", "scripts/import-tools.py", source, "--info", info, "--output", output }, { text = true })
